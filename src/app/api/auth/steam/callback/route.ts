@@ -55,6 +55,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(finish);
   } catch (e) {
     console.error("Steam callback error:", e);
-    return NextResponse.redirect(new URL("/sign-in?steam_error=1", SITE));
+    const msg = e instanceof Error ? e.message : "unknown";
+    const url = new URL("/sign-in", SITE);
+    url.searchParams.set("steam_error", "1");
+    url.searchParams.set("reason", msg.slice(0, 120));
+    return NextResponse.redirect(url);
   }
 }

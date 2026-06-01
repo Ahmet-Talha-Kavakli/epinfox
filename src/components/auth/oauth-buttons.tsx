@@ -52,7 +52,14 @@ export function OAuthButtons({
         <button
           key={strategy}
           type="button"
-          onClick={() => onProvider(strategy)}
+          onClick={() => {
+            // Steam Clerk OAuth değil — kendi OpenID akışımıza yönlendir.
+            if (strategy === "oauth_custom_steam") {
+              window.location.href = "/api/auth/steam";
+              return;
+            }
+            onProvider(strategy);
+          }}
           className={`flex h-11 w-full items-center justify-center gap-2.5 rounded-full border text-sm font-semibold transition-colors ${cls}`}
         >
           <Icon size={19} weight="fill" className={iconCls} />

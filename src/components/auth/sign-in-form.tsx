@@ -62,7 +62,10 @@ export function SignInForm() {
   }
 
   async function handleOAuth(strategy: OAuthStrategy) {
-    if (!signIn) return;
+    if (!signIn) {
+      setError(t("auth.err.generic"));
+      return;
+    }
     setError(null);
     try {
       await signIn.sso({
@@ -70,7 +73,8 @@ export function SignInForm() {
         redirectUrl: "/sign-in/sso-callback",
         redirectCallbackUrl: "/sign-in/sso-callback",
       });
-    } catch {
+    } catch (e) {
+      console.error("OAuth sign-in error:", e);
       setError(t("auth.err.generic"));
     }
   }

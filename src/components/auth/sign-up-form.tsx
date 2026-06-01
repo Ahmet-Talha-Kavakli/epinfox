@@ -98,7 +98,10 @@ export function SignUpForm() {
   }
 
   async function handleOAuth(strategy: OAuthStrategy) {
-    if (!signUp) return;
+    if (!signUp) {
+      setError(t("auth.err.generic"));
+      return;
+    }
     setError(null);
     try {
       await signUp.sso({
@@ -106,7 +109,8 @@ export function SignUpForm() {
         redirectUrl: "/sign-up/sso-callback",
         redirectCallbackUrl: "/sign-up/sso-callback",
       });
-    } catch {
+    } catch (e) {
+      console.error("OAuth sign-up error:", e);
       setError(t("auth.err.generic"));
     }
   }

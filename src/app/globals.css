@@ -1,0 +1,415 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand paleti — CANLI MAVİ (açık tema; 600 ana, 50 açık zemin). */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Accent — SICAK TURUNCU (mavi ile kontrast, tilkiyle uyumlu). */
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+
+  /* Nötr palet — NORMAL açık tema: ink-50 = en açık yüzey, ink-900 = koyu metin. */
+  --color-ink-50: #f8fafc;   /* en açık — muted yüzey */
+  --color-ink-100: #f1f5f9;  /* kart hover */
+  --color-ink-200: #e2e8f0;  /* border */
+  --color-ink-300: #cbd5e1;  /* güçlü border */
+  --color-ink-400: #94a3b8;  /* soluk metin */
+  --color-ink-500: #64748b;  /* muted metin */
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;  /* ikincil metin */
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;  /* ana metin (koyu) */
+  --color-ink-950: #020617;
+
+  /* Gerçek beyaz — kartlar/yüzeyler beyaz olur. */
+  --color-white: #ffffff;
+
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-ring: #3b82f6;
+
+  /* Durum renkleri — dark zeminde okunur tonlar.
+     50 = koyu zemin (rozet bg), 500/600 = parlak vurgu, 700 = açık metin. */
+  /* Durum renkleri — AÇIK tema: 50 açık zemin (rozet bg), 600 canlı vurgu, 700 koyu metin. */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-info-50: #f0f9ff;
+  --color-info-100: #e0f2fe;
+  --color-info-200: #bae6fd;
+  --color-info-500: #0ea5e9;
+  --color-info-600: #0284c7;
+  --color-info-700: #0369a1;
+
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, monospace;
+
+  /* Açık tema — yumuşak gri gölgeler (slate tonlu). */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 4px 16px -4px rgba(15, 23, 42, 0.1),
+    0 2px 6px -2px rgba(15, 23, 42, 0.06);
+  --shadow-float: 0 20px 40px -12px rgba(15, 23, 42, 0.18),
+    0 8px 16px -4px rgba(15, 23, 42, 0.1);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: #ffffff;
+  /* Yatay taşmayı kes ama scroll konteyneri OLUŞTURMA (clip), yoksa
+     position: sticky bozulur. */
+  overflow-x: clip;
+}
+
+body {
+  background: #f8fafc;
+  /* clip: yatay scroll açılmaz + sticky çalışmaya devam eder. */
+  overflow-x: clip;
+  max-width: 100%;
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.022em;
+  font-weight: 600;
+}
+
+h1 {
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+::selection {
+  background: var(--color-brand-300);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-300);
+  border-radius: 999px;
+  border: 2px solid var(--color-background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-400);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.container-page {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
+
+/* Header — koyu cam efekti (yoğun blur + alt geçiş tüyü).
+   NOT: position bırakılmaz — header `position: sticky` kullanır ve `.glass`'a
+   `position: relative` koymak sticky'yi ezer. sticky de positioned olduğundan
+   ::after yine ona göre konumlanır. */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+/* Header'ın hemen altına yoğun blur geçişi: scroll'da header'ın arkasından
+   geçen sayfa içeriği belirgin şekilde bulanıklaşıp yumuşakça netleşsin. */
+.glass::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 80px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(248, 250, 252, 0.5) 0%,
+    transparent 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 55%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 55%,
+    transparent 100%
+  );
+}
+
+/* Hero — sabit, hareketsiz koyu wash (radial vurgu, animasyon yok) */
+.hero-wash {
+  background:
+    radial-gradient(
+      70% 55% at 50% 0%,
+      rgba(37, 99, 235, 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      55% 40% at 82% 15%,
+      rgba(249, 115, 22, 0.06) 0%,
+      transparent 70%
+    ),
+    #f8fafc;
+}
+
+/* Statik animasyonlar (giriş efektleri) — arka plan hareketi YOK */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* Sonsuz sola kayan şerit (ikon marquee). İçerik 2x kopyalanır, %50 kaydırılır. */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee-left 40s linear infinite;
+}
+/* Üzerine gelince dur */
+.marquee-pause:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* Soldan sağa kayan şerit (komisyon banner yazısı). Tekrarlı metin akar. */
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.animate-marquee-rtl {
+  animation: marquee-right 18s linear infinite;
+}
+.marquee-pause:hover .animate-marquee-rtl {
+  animation-play-state: paused;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-in {
+  animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* RGB promo butonu — kayan renkli gradient zemin */
+@keyframes rgb-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-rgb {
+  background-image: linear-gradient(
+    90deg,
+    #ff0080,
+    #ff8c00,
+    #ffed00,
+    #00d4ff,
+    #7a00ff,
+    #ff0080
+  );
+  background-size: 300% 100%;
+  animation: rgb-shift 4s linear infinite;
+}
+
+/* Bağış kutusu — kırmızı tonları arasında kayan RGB */
+.animate-rgb-red {
+  background-image: linear-gradient(
+    90deg,
+    #b91c1c,
+    #ef4444,
+    #f87171,
+    #dc2626,
+    #ff5470,
+    #b91c1c
+  );
+  background-size: 300% 100%;
+  animation: rgb-shift 3.5s linear infinite;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+
+.lift {
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
+}
+.lift:hover {
+  transform: translateY(-2px);
+}
+
+/* ─── Nav maskotu (SVG tilki) — nav üstünde yürür, bacakları oynar ─── */
+/* Wrapper: soldan sağa gidip gelir (alternate). */
+@keyframes mascot-walk-x {
+  from { left: 2%; }
+  to { left: 98%; }
+}
+/* Yürürken çok hafif zıplar (bob) — adım vurgusunu bozmasın diye küçük. */
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+/* Yön çevirme: gidişte sağa bakar, dönüşte sola (pozisyon ile senkron). */
+@keyframes mascot-flip {
+  0%, 49.9% { transform: scaleX(1); }
+  50%, 100% { transform: scaleX(-1); }
+}
+/* Bacak adımı — kalçadan öne-arkaya makaslar (gerçek yürüyüş). */
+@keyframes mascot-leg-a {
+  0% { transform: rotate(34deg); }
+  50% { transform: rotate(-34deg); }
+  100% { transform: rotate(34deg); }
+}
+@keyframes mascot-leg-b {
+  0% { transform: rotate(-34deg); }
+  50% { transform: rotate(34deg); }
+  100% { transform: rotate(-34deg); }
+}
+/* Kuyruk hafif sallanır. */
+@keyframes mascot-tail {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(8deg); }
+}
+.mascot-walker {
+  animation: mascot-walk-x 28s ease-in-out infinite alternate;
+}
+.mascot-flipper {
+  animation: mascot-flip 56s steps(1) infinite;
+}
+.mascot-bobber {
+  animation: mascot-bob 0.85s ease-in-out infinite;
+}
+.mascot-leg-a {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: mascot-leg-a 0.85s ease-in-out infinite;
+}
+.mascot-leg-b {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: mascot-leg-b 0.85s ease-in-out infinite;
+}
+.mascot-tail {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: mascot-tail 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-walker,
+  .mascot-flipper,
+  .mascot-bobber,
+  .mascot-leg-a,
+  .mascot-leg-b,
+  .mascot-tail {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-scale-in {
+    animation: none;
+  }
+  .lift:hover {
+    transform: none;
+  }
+}

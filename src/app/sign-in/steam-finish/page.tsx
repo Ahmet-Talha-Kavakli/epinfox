@@ -11,11 +11,12 @@ import { useI18n } from "@/lib/i18n/provider";
  * Backend (/api/auth/steam/callback) token üretip buraya ?token= ile yönlendirir.
  */
 function SteamFinish() {
-  const { signIn, setActive } = useSignIn() as unknown as {
-    signIn: {
+  const { isLoaded, signIn, setActive } = useSignIn() as unknown as {
+    isLoaded: boolean;
+    signIn?: {
       create: (p: { strategy: "ticket"; ticket: string }) => Promise<{ status: string; createdSessionId: string | null }>;
     };
-    setActive: (p: { session: string | null }) => Promise<void>;
+    setActive?: (p: { session: string | null }) => Promise<void>;
   };
   const router = useRouter();
   const params = useSearchParams();
@@ -24,10 +25,13 @@ function SteamFinish() {
   const ran = useRef(false);
 
   useEffect(() => {
+    // Clerk (clerk.browser.js) henüz yüklenmediyse bekle — yoksa yarış durumuyla
+    // signIn undefined gelir ve haksız yere "bir şeyler ters gitti" gösterilir.
+    if (!isLoaded || !signIn || !setActive) return;
     if (ran.current) return;
     ran.current = true;
     const ticket = params.get("token");
-    if (!ticket || !signIn) {
+    if (!ticket) {
       setError(true);
       return;
     }
@@ -45,7 +49,7 @@ function SteamFinish() {
         setError(true);
       }
     })();
-  }, [params, signIn, setActive, router]);
+  }, [isLoaded, params, signIn, setActive, router]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">

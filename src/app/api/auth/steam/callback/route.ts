@@ -91,6 +91,7 @@ export async function GET(req: NextRequest) {
 
     const finish = new URL("/sign-in/steam-finish", SITE);
     finish.searchParams.set("token", token.token);
+    finish.searchParams.set("debug", "1"); // GEÇİCİ: steam-finish teşhisi, çözünce kaldır
     return NextResponse.redirect(finish);
   } catch (e) {
     console.error("Steam callback error:", e);

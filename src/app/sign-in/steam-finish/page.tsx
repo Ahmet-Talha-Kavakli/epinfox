@@ -17,14 +17,18 @@ import { useI18n } from "@/lib/i18n/provider";
  * API'de farklı davranabiliyor). Hata/aşama ekrana yazılır (debug=1 ile).
  */
 function SteamFinish() {
+  type ClerkErr = { longMessage?: string; message?: string } | null;
   const signInHook = useSignIn() as unknown as {
-    isLoaded?: boolean;
     signIn?: {
+      // Future API (bu fork): ticket + finalize. finalize session'ı aktif eder
+      // ve navigate callback'i ile yönlendirir (sign-up-form ile aynı desen).
+      ticket?: (p: { ticket: string }) => Promise<{ error: ClerkErr }>;
+      finalize?: (p?: { navigate?: () => void }) => Promise<{ error: ClerkErr }>;
+      // Klasik fallback
       create?: (p: { strategy: "ticket"; ticket: string }) => Promise<{
         status?: string;
         createdSessionId?: string | null;
       }>;
-      ticket?: (p: { ticket: string }) => Promise<{ createdSessionId?: string | null }>;
     };
   };
   const clerk = useClerk() as unknown as {
@@ -43,9 +47,9 @@ function SteamFinish() {
   useEffect(() => {
     // Bu Clerk v7 Signals fork'unda useSignIn().isLoaded undefined gelebiliyor;
     // signIn objesinin (ve ticket metotlarının) varlığını esas alıyoruz.
-    const hasTicketMethod =
-      typeof signIn?.create === "function" || typeof signIn?.ticket === "function";
-    if (!signIn || !hasTicketMethod) {
+    const hasMethod =
+      typeof signIn?.ticket === "function" || typeof signIn?.create === "function";
+    if (!signIn || !hasMethod) {
       setStep(`waiting clerk (signIn=${!!signIn})`);
       return;
     }
@@ -59,6 +63,10 @@ function SteamFinish() {
       return;
     }
 
+    const go = () => {
+      window.location.href = "/sign-in/steam-email";
+    };
+
     const timeout = setTimeout(() => {
       setStep("timeout (15s)");
       setError(true);
@@ -66,38 +74,41 @@ function SteamFinish() {
 
     (async () => {
       try {
-        let createdSessionId: string | null | undefined;
-
-        // 1) Klasik create
-        if (typeof signIn.create === "function") {
-          setStep("signIn.create…");
-          const res = await signIn.create({ strategy: "ticket", ticket });
-          createdSessionId = res?.createdSessionId;
-          setStep(`create done (status=${res?.status}, sid=${!!createdSessionId})`);
-        }
-
-        // 2) Olmazsa Future ticket API
-        if (!createdSessionId && typeof signIn.ticket === "function") {
+        // Future API (bu fork'un yolu): ticket → finalize. finalize session'ı
+        // aktive eder ve navigate ile yönlendirir.
+        if (typeof signIn.ticket === "function" && typeof signIn.finalize === "function") {
           setStep("signIn.ticket…");
-          const res = await signIn.ticket({ ticket });
-          createdSessionId = res?.createdSessionId;
-          setStep(`ticket done (sid=${!!createdSessionId})`);
-        }
-
-        if (!createdSessionId) {
-          setStep("no session id");
+          const tk = await signIn.ticket({ ticket });
+          if (tk?.error) throw tk.error;
+          setStep("signIn.finalize…");
+          const fin = await signIn.finalize({ navigate: go });
+          if (fin?.error) throw fin.error;
           clearTimeout(timeout);
-          setError(true);
+          setStep("redirecting…");
+          // finalize navigate'i çağırmadıysa biz yönlendirelim (emniyet).
+          go();
           return;
         }
 
-        setStep("setActive…");
-        if (clerk.setActive) {
-          await clerk.setActive({ session: createdSessionId });
+        // Klasik fallback: create + setActive
+        if (typeof signIn.create === "function") {
+          setStep("signIn.create…");
+          const res = await signIn.create({ strategy: "ticket", ticket });
+          const sid = res?.createdSessionId;
+          setStep(`create done (status=${res?.status}, sid=${!!sid})`);
+          if (sid && clerk.setActive) {
+            setStep("setActive…");
+            await clerk.setActive({ session: sid });
+          }
+          clearTimeout(timeout);
+          setStep("redirecting…");
+          go();
+          return;
         }
+
+        setStep("no usable method");
         clearTimeout(timeout);
-        setStep("redirecting…");
-        window.location.href = "/sign-in/steam-email";
+        setError(true);
       } catch (e) {
         console.error("Steam finish error:", e);
         clearTimeout(timeout);

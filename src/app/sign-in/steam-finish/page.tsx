@@ -18,17 +18,15 @@ import { useI18n } from "@/lib/i18n/provider";
  */
 function SteamFinish() {
   type ClerkErr = { longMessage?: string; message?: string } | null;
+  // Bu fork'ta create/ticket {error} döndürür; status & createdSessionId
+  // METOT DÖNÜŞÜNDE DEĞİL, signIn objesinin KENDİ alanlarında (Signals state).
   const signInHook = useSignIn() as unknown as {
     signIn?: {
-      // Future API (bu fork): ticket + finalize. finalize session'ı aktif eder
-      // ve navigate callback'i ile yönlendirir (sign-up-form ile aynı desen).
+      status?: string | null;
+      createdSessionId?: string | null;
+      create?: (p: { strategy: "ticket"; ticket: string }) => Promise<{ error: ClerkErr }>;
       ticket?: (p: { ticket: string }) => Promise<{ error: ClerkErr }>;
       finalize?: (p?: { navigate?: () => void }) => Promise<{ error: ClerkErr }>;
-      // Klasik fallback
-      create?: (p: { strategy: "ticket"; ticket: string }) => Promise<{
-        status?: string;
-        createdSessionId?: string | null;
-      }>;
     };
   };
   const clerk = useClerk() as unknown as {
@@ -85,24 +83,25 @@ function SteamFinish() {
           return;
         }
 
-        setStep("signIn.create…");
-        const res = await signIn.create({ strategy: "ticket", ticket });
-        const sid = res?.createdSessionId;
-        const status = res?.status;
-        console.log("[steam] create result:", JSON.stringify(res));
-        setStep(`create: status=${status} sid=${sid ? sid.slice(0, 10) : "yok"}`);
-
-        // Session ID DÖNDÜYSE setActive ile aktive et (en güvenli yol).
-        if (sid && clerk.setActive) {
-          setStep("setActive…");
-          await clerk.setActive({ session: sid });
-          clearTimeout(timeout);
-          setStep("redirecting…");
-          go();
-          return;
+        // Ticket için özel metot varsa ONU kullan (create değil). ticket()
+        // sign-in state'ini status=complete + createdSessionId'e getirir.
+        if (typeof signIn.ticket === "function") {
+          setStep("signIn.ticket…");
+          const tk = await signIn.ticket({ ticket });
+          if (tk?.error) throw tk.error;
+        } else if (typeof signIn.create === "function") {
+          setStep("signIn.create…");
+          const cr = await signIn.create({ strategy: "ticket", ticket });
+          if (cr?.error) throw cr.error;
         }
 
-        // Session id yok ama status complete + finalize varsa finalize dene.
+        // status & createdSessionId signIn objesinin KENDİ alanları.
+        const sid = signIn.createdSessionId;
+        const status = signIn.status;
+        console.log("[steam] after ticket — status:", status, "sid:", sid);
+        setStep(`status=${status} sid=${sid ? sid.slice(0, 10) : "yok"}`);
+
+        // status=complete → finalize ile session'ı aktive et + yönlendir.
         if (status === "complete" && typeof signIn.finalize === "function") {
           setStep("signIn.finalize…");
           const fin = await signIn.finalize({ navigate: go });
@@ -113,8 +112,17 @@ function SteamFinish() {
           return;
         }
 
-        // Hiçbiri olmadı — status'u göster (en kritik teşhis bilgisi).
-        setStep(`session yok. status=${status}, finalize=${typeof signIn.finalize}`);
+        // finalize olmadıysa setActive ile (session id varsa).
+        if (sid && clerk.setActive) {
+          setStep("setActive…");
+          await clerk.setActive({ session: sid });
+          clearTimeout(timeout);
+          setStep("redirecting…");
+          go();
+          return;
+        }
+
+        setStep(`aktive edilemedi. status=${status} sid=${!!sid}`);
         clearTimeout(timeout);
         setError(true);
       } catch (e) {

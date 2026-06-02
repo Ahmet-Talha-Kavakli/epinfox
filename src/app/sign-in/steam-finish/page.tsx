@@ -10,16 +10,15 @@ import { useI18n } from "@/lib/i18n/provider";
  * Steam callback'inden gelen sign-in token (ticket) ile Clerk session'ı açar.
  * Backend (/api/auth/steam/callback) token üretip buraya ?token= ile yönlendirir.
  *
- * Bu Clerk v7 (Signals API) fork'unda ticket sign-in iki yolla yapılabilir:
- *  - signIn.create({ strategy: "ticket", ticket }) → SignInResource
- *  - signIn.ticket({ ticket }) → Future API
- * İkisini de deneriz; setActive useClerk()'ten alınır (useSignIn'inki Signals
- * API'de farklı davranabiliyor). Hata/aşama ekrana yazılır (debug=1 ile).
+ * Bu Clerk v7 (Signals API) fork'unda:
+ *  - useSignIn().isLoaded undefined gelebiliyor → signIn objesinin varlığına bakarız.
+ *  - create/ticket {error} döndürür; status & createdSessionId signIn objesinin
+ *    KENDİ alanlarındadır (metot dönüşünde değil).
+ *  - Akış: create({strategy:"ticket"}) → finalize() (session'ı aktive eder + navigate).
+ *  - Backend session'ı zaten açtıysa Clerk 'session_exists' verir → başarı sayıp geçeriz.
  */
 function SteamFinish() {
   type ClerkErr = { longMessage?: string; message?: string } | null;
-  // Bu fork'ta create/ticket {error} döndürür; status & createdSessionId
-  // METOT DÖNÜŞÜNDE DEĞİL, signIn objesinin KENDİ alanlarında (Signals state).
   const signInHook = useSignIn() as unknown as {
     signIn?: {
       status?: string | null;
@@ -38,27 +37,19 @@ function SteamFinish() {
   const params = useSearchParams();
   const { t } = useI18n();
   const [error, setError] = useState(false);
-  const [step, setStep] = useState("init");
   const ran = useRef(false);
 
-  const debug = params.get("debug") === "1";
   const { signIn } = signInHook;
 
   useEffect(() => {
-    // Bu Clerk v7 Signals fork'unda useSignIn().isLoaded undefined gelebiliyor;
-    // signIn objesinin (ve ticket metotlarının) varlığını esas alıyoruz.
     const hasMethod =
       typeof signIn?.ticket === "function" || typeof signIn?.create === "function";
-    if (!signIn || !hasMethod) {
-      setStep(`waiting clerk (signIn=${!!signIn})`);
-      return;
-    }
+    if (!signIn || !hasMethod) return; // Clerk henüz hazır değil
     if (ran.current) return;
     ran.current = true;
 
     const ticket = params.get("token");
     if (!ticket) {
-      setStep("no token");
       setError(true);
       return;
     }
@@ -67,94 +58,57 @@ function SteamFinish() {
       window.location.href = "/sign-in/steam-email";
     };
 
-    // ZATEN GİRİŞ YAPILMIŞSA: ticket denemeye gerek yok (yoksa Clerk
-    // 'session_exists' verir). Backend session'ı zaten açmış olabiliyor →
-    // doğrudan steam-email'e geç (orası needsEmail'e göre karar verir).
+    // Backend session'ı zaten açmış olabilir → ticket denemeden geç (yoksa
+    // 'session_exists' hatası). steam-email needsEmail'e göre karar verir.
     if (clerk.user || clerk.session) {
-      setStep("zaten giriş var → yönlendiriliyor");
       go();
       return;
     }
 
-    const timeout = setTimeout(() => {
-      setStep("timeout (15s)");
-      setError(true);
-    }, 15000);
+    const timeout = setTimeout(() => setError(true), 15000);
 
     (async () => {
       try {
-        // TEŞHİS: signIn objesinin gerçek metot/alanlarını gör.
-        const keys = Object.keys(signIn as object).join(",");
-        console.log("[steam] signIn keys:", keys);
-
-        if (typeof signIn.create !== "function") {
-          setStep(`no create. keys=${keys}`);
-          clearTimeout(timeout);
-          setError(true);
-          return;
-        }
-
-        // 1) create({strategy:"ticket", ticket}) — belgelenmiş param yapısı.
         if (typeof signIn.create === "function") {
-          setStep("signIn.create…");
           const cr = await signIn.create({ strategy: "ticket", ticket });
-          if (cr?.error) throw cr.error; // session_exists vb. catch'te yönlendirilir
+          if (cr?.error) throw cr.error;
         }
-
-        // create complete yapmadıysa ticket() dene.
         if (signIn.status !== "complete" && typeof signIn.ticket === "function") {
-          setStep("signIn.ticket…");
           const tk = await signIn.ticket({ ticket });
           if (tk?.error) throw tk.error;
         }
 
-        // status & createdSessionId signIn objesinin KENDİ alanları.
         const sid = signIn.createdSessionId;
-        const status = signIn.status;
-        console.log("[steam] final — status:", status, "sid:", sid);
-        setStep(`status=${status} sid=${sid ? sid.slice(0, 10) : "yok"}`);
 
         // status=complete → finalize ile session'ı aktive et + yönlendir.
-        if (status === "complete" && typeof signIn.finalize === "function") {
-          setStep("signIn.finalize…");
+        if (signIn.status === "complete" && typeof signIn.finalize === "function") {
           const fin = await signIn.finalize({ navigate: go });
           if (fin?.error) throw fin.error;
           clearTimeout(timeout);
-          setStep("redirecting…");
           go();
           return;
         }
 
-        // finalize olmadıysa setActive ile (session id varsa).
+        // finalize yoksa setActive ile (session id varsa).
         if (sid && clerk.setActive) {
-          setStep("setActive…");
           await clerk.setActive({ session: sid });
           clearTimeout(timeout);
-          setStep("redirecting…");
           go();
           return;
         }
 
-        setStep(`aktive edilemedi. status=${status} sid=${!!sid}`);
         clearTimeout(timeout);
         setError(true);
       } catch (e) {
-        console.error("Steam finish error:", e);
         clearTimeout(timeout);
-        const errObj = e as {
-          code?: string;
-          errors?: { code?: string; longMessage?: string; message?: string }[];
-        };
+        const errObj = e as { code?: string; errors?: { code?: string }[] };
         const code = errObj?.code || errObj?.errors?.[0]?.code;
-        // 'session_exists' = zaten giriş yapılmış → hata değil, başarı. Yönlendir.
+        // 'session_exists' = zaten giriş yapılmış → hata değil, başarı.
         if (code === "session_exists") {
-          setStep("zaten giriş var → yönlendiriliyor");
           go();
           return;
         }
-        const msg = e instanceof Error ? e.message : String(e);
-        const detail = errObj?.errors?.[0]?.longMessage || errObj?.errors?.[0]?.message || msg;
-        setStep(`error: ${detail}`);
+        console.error("Steam finish error:", e);
         setError(true);
       }
     })();
@@ -167,7 +121,6 @@ function SteamFinish() {
       {error ? (
         <>
           <p className="text-lg font-semibold text-ink-900">{t("auth.err.generic")}</p>
-          {debug && <p className="max-w-md text-xs text-danger-600">{step}</p>}
           <button
             onClick={() => router.push("/sign-in")}
             className="text-sm font-medium text-brand-600 hover:text-brand-700"
@@ -179,7 +132,6 @@ function SteamFinish() {
         <>
           <SpinnerGap size={32} className="animate-spin text-brand-500" />
           <p className="text-sm text-ink-500">{t("auth.steam")}…</p>
-          {debug && <p className="max-w-md text-xs text-ink-400">{step}</p>}
         </>
       )}
     </div>

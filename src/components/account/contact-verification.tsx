@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useReverification } from "@clerk/nextjs";
 import {
   EnvelopeSimple,
   Phone,
@@ -16,6 +16,19 @@ import { Button } from "@/components/ui/button";
 import { syncPhoneVerified } from "@/lib/actions/phone";
 
 type ClerkErr = { code?: string; message?: string } | undefined;
+
+/**
+ * TR telefonunu E.164'e çevirir (Clerk +90… bekler).
+ * "0552…" / "552…" / "+90552…" / "90552…" → "+90552…"
+ */
+function toE164TR(raw: string): string {
+  const digits = raw.replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) return digits;
+  let d = digits.replace(/\D/g, "");
+  if (d.startsWith("90")) return "+" + d;
+  if (d.startsWith("0")) d = d.slice(1);
+  return "+90" + d;
+}
 
 /** E-posta ve telefon doğrulama durumu + telefon doğrulama akışı (Clerk SMS). */
 export function ContactVerification({ phone }: { phone: string | null }) {
@@ -82,6 +95,12 @@ function PhoneVerifyFlow() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
 
+  // Telefon eklemek hassas işlem → Clerk reverification isteyebilir. Bu fetcher
+  // sarmalayıcı gerekirse otomatik doğrulama modalı açıp isteği tekrar çalıştırır.
+  const addPhone = useReverification((phoneNumber: string) =>
+    user!.createPhoneNumber({ phoneNumber }),
+  );
+
   function mapError(err: ClerkErr): string {
     const map: Record<string, string> = {
       form_identifier_exists: t("c3.contact.errPhoneExists"),
@@ -96,7 +115,8 @@ function PhoneVerifyFlow() {
     setMsg(null);
     start(async () => {
       try {
-        const ph = await user?.createPhoneNumber({ phoneNumber: phone });
+        const e164 = toE164TR(phone);
+        const ph = await addPhone(e164);
         await ph?.prepareVerification();
         setPhoneId(ph?.id ?? null);
         setStage("verify");

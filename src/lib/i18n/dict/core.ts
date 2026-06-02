@@ -74,6 +74,12 @@ export const tr: Dict = {
   "footer.securePayment": "Güvenli Ödeme Sunuyoruz",
 
   // ── Anasayfa bölümleri ──
+  "home.ticker.label": "Kampanya",
+  "home.ticker.instant": "Anında teslimat — siparişin saniyeler içinde hesabında",
+  "home.ticker.referral": "Arkadaşını davet et, ikiniz de 25₺ bonus kazanın",
+  "home.ticker.subs": "Netflix · Spotify · Disney+ aboneliklerinde uygun fiyat",
+  "home.ticker.promo": "{code} koduyla {value} bonus — hemen kullan",
+  "common.close": "Kapat",
   "home.popularGames": "Popüler Oyunlar",
   "home.forYou": "Sizin İçin Seçtiklerimiz",
   "home.forYou.sub": "En çok tercih edilen ürünler.",
@@ -168,6 +174,12 @@ export const en: Dict = {
   "footer.securePayment": "We Offer Secure Payment",
 
   // ── Home sections ──
+  "home.ticker.label": "Deals",
+  "home.ticker.instant": "Instant delivery — your order lands in your account in seconds",
+  "home.ticker.referral": "Invite a friend — you both earn a 25₺ bonus",
+  "home.ticker.subs": "Great prices on Netflix · Spotify · Disney+ subscriptions",
+  "home.ticker.promo": "Use code {code} for a {value} bonus — claim now",
+  "common.close": "Close",
   "home.popularGames": "Popular Games",
   "home.forYou": "Picked For You",
   "home.forYou.sub": "Our most preferred products.",
@@ -262,6 +274,12 @@ export const de: Dict = {
   "footer.securePayment": "Wir bieten sichere Zahlung",
 
   // ── Startseite ──
+  "home.ticker.label": "Aktion",
+  "home.ticker.instant": "Sofortige Lieferung — deine Bestellung ist in Sekunden im Konto",
+  "home.ticker.referral": "Lade einen Freund ein — ihr erhaltet beide 25₺ Bonus",
+  "home.ticker.subs": "Top-Preise für Netflix · Spotify · Disney+ Abos",
+  "home.ticker.promo": "Code {code} für {value} Bonus — jetzt einlösen",
+  "common.close": "Schließen",
   "home.popularGames": "Beliebte Spiele",
   "home.forYou": "Für dich ausgewählt",
   "home.forYou.sub": "Unsere beliebtesten Produkte.",
@@ -356,6 +374,12 @@ export const ar: Dict = {
   "footer.securePayment": "نوفّر دفعاً آمناً",
 
   // ── الصفحة الرئيسية ──
+  "home.ticker.label": "عروض",
+  "home.ticker.instant": "تسليم فوري — طلبك يصل إلى حسابك خلال ثوانٍ",
+  "home.ticker.referral": "ادعُ صديقًا — تكسبان معًا مكافأة 25₺",
+  "home.ticker.subs": "أسعار رائعة على اشتراكات Netflix · Spotify · Disney+",
+  "home.ticker.promo": "استخدم الكود {code} للحصول على مكافأة {value} — استفد الآن",
+  "common.close": "إغلاق",
   "home.popularGames": "الألعاب الشائعة",
   "home.forYou": "اخترناها لك",
   "home.forYou.sub": "أكثر منتجاتنا تفضيلاً.",
@@ -450,6 +474,12 @@ export const ru: Dict = {
   "footer.securePayment": "Мы предлагаем безопасную оплату",
 
   // ── Главная страница ──
+  "home.ticker.label": "Акции",
+  "home.ticker.instant": "Мгновенная доставка — заказ поступит на счёт за секунды",
+  "home.ticker.referral": "Пригласи друга — оба получите бонус 25₺",
+  "home.ticker.subs": "Выгодные цены на подписки Netflix · Spotify · Disney+",
+  "home.ticker.promo": "Промокод {code} — бонус {value}, активируйте сейчас",
+  "common.close": "Закрыть",
   "home.popularGames": "Популярные игры",
   "home.forYou": "Выбрано для вас",
   "home.forYou.sub": "Наши самые популярные товары.",

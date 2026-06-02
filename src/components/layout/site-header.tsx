@@ -114,7 +114,7 @@ export function SiteHeader({
           />
           <div className="absolute inset-0 bg-[#1b2440]/28" />
         </div>
-        <div className="relative flex h-11 items-center justify-end px-4 text-[13px] text-white/80 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex h-11 w-full max-w-[1440px] items-center justify-end px-4 text-[13px] text-white/80 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <LocaleSwitcher />
             <span className="mx-0.5 h-3.5 w-px bg-white/20" />
@@ -195,7 +195,7 @@ export function SiteHeader({
       </div>
 
       {/* ───────── KATMAN 2 — ana satır (scroll'da kayar; dropdown'lar Katman 3'ün üstünde açılsın diye z-50) ───────── */}
-      <div className="glass relative z-50 flex h-24 items-center gap-5 border-b border-ink-200/60 px-4 sm:px-6 lg:px-8">
+      <div className="glass relative z-50 mx-auto flex h-24 w-full max-w-[1440px] items-center gap-5 border-b border-ink-200/60 px-4 sm:px-6 lg:px-8">
         <Logo />
 
         {/* Büyük arama — sabit genişlik; esnemez. Üstünde yürüyen tilki maskotu. */}
@@ -349,7 +349,7 @@ export function SiteHeader({
 
       {/* ───────── KATMAN 3 — nav satırı (TEK BAŞINA sticky; üst katmanlar kaybolur) ───────── */}
       <div className="sticky top-0 z-40 hidden bg-[#f8fafc] px-4 py-3 sm:px-6 lg:block lg:px-8">
-        <nav className="relative flex h-14 items-center gap-1 rounded-2xl border-2 border-ink-900 bg-white px-4 shadow-card">
+        <nav className="relative mx-auto flex h-14 w-full max-w-[1440px] items-center gap-1 rounded-2xl border-2 border-ink-900 bg-white px-4 shadow-card">
           {/* Anasayfa solda, hemen sağında Mağaza mega-menüsü */}
           <Link
             href="/"

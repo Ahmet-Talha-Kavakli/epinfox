@@ -14,6 +14,8 @@ import { BlogStrip } from "@/components/store/blog-strip";
 import { TrustMarquee } from "@/components/store/trust-marquee";
 import { CampaignBento, type CampaignCard } from "@/components/store/campaign-bento";
 import { CommissionBanner } from "@/components/store/commission-banner";
+import { PromoTicker, type TickerItem } from "@/components/store/promo-ticker";
+import { getFeaturedPromo } from "@/lib/actions/promo";
 import {
   HeroSection,
   type HeroSlide,
@@ -24,12 +26,34 @@ import { getServerT, getServerLocale } from "@/lib/i18n/server";
 
 export default async function HomePage() {
   const locale = await getServerLocale();
-  const [featured, brands, reviews, t] = await Promise.all([
+  const [featured, brands, reviews, t, featuredPromo] = await Promise.all([
     getProducts({ limit: 15 }),
     getBrands(),
     getRecentReviews(12, locale),
     getServerT(),
+    getFeaturedPromo(),
   ]);
+
+  // Kampanya şeridi — sabit kampanya mesajları + (varsa) aktif promo kodu.
+  const tickerItems: TickerItem[] = [
+    { icon: "bolt", text: t("home.ticker.instant"), href: "/store" },
+    { icon: "gift", text: t("home.ticker.referral"), href: "/referral" },
+    { icon: "spark", text: t("home.ticker.subs"), href: "/store?category=abonelik" },
+  ];
+  if (featuredPromo) {
+    tickerItems.unshift({
+      icon: "gift",
+      text: t("home.ticker.promo")
+        .replace("{code}", featuredPromo.code)
+        .replace(
+          "{value}",
+          featuredPromo.type === "bonus_balance"
+            ? `${featuredPromo.value}₺`
+            : `%${featuredPromo.value}`,
+        ),
+      href: "/store",
+    });
+  }
 
   // Hero — sol büyük slider (otomatik dönen tanıtım banner'ları).
   const HERO_SLIDES: HeroSlide[] = [
@@ -58,7 +82,10 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 1) EN ÜST — HAREKETLİ OYUN İKON ŞERİDİ (sola kayar, hover'da durur) */}
+      {/* 0) KAMPANYA / İNDİRİM ŞERİDİ — en üst, kapatılabilir, kayan */}
+      <PromoTicker items={tickerItems} />
+
+      {/* 1) HAREKETLİ OYUN İKON ŞERİDİ (sola kayar, hover'da durur) */}
       <GameIconStrip brands={brands} />
 
       {/* 2) HERO — sol büyük slider + sağ 2 sabit kart */}

@@ -27,3 +27,14 @@ export const SITE = {
     kep: "[KEP ADRESİ]",
   },
 } as const;
+
+/**
+ * Yasal alan henüz doldurulmadı mı? Placeholder değerler `[...]` ile başlar
+ * (örn. "[ETBİS KAYIT NO]"). Gerçek değer girilene kadar ilgili rozet/satır
+ * gizlenir — sahte/yanıltıcı yasal bilgi gösterilmez.
+ */
+export function isPlaceholder(value: string | null | undefined): boolean {
+  if (!value) return true;
+  const v = value.trim();
+  return v === "" || v.startsWith("[");
+}

@@ -1,4 +1,5 @@
 import { getServerT } from "@/lib/i18n/server";
+import { isPlaceholder } from "@/config/site";
 
 export async function LegalLayout({
   title,
@@ -47,10 +48,13 @@ export function LegalH3({ children }: { children: React.ReactNode }) {
  * rows: [["Unvan", "..."], ["Adres", "..."], ...]
  */
 export function LegalInfoTable({ rows }: { rows: [string, string][] }) {
+  // Henüz doldurulmamış (placeholder) değerli satırları gizle — sahte/yanıltıcı
+  // yasal bilgi gösterme. Değer girilince satır otomatik görünür.
+  const visible = rows.filter(([, value]) => !isPlaceholder(value));
   return (
     <div className="overflow-hidden rounded-2xl border border-ink-200 bg-white">
       <dl className="divide-y divide-ink-100">
-        {rows.map(([label, value]) => (
+        {visible.map(([label, value]) => (
           <div
             key={label}
             className="grid grid-cols-1 gap-1 px-4 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"

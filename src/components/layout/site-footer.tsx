@@ -10,7 +10,7 @@ import {
   SealCheck,
 } from "@phosphor-icons/react/dist/ssr";
 import { Logo } from "@/components/brand/logo";
-import { SITE } from "@/config/site";
+import { SITE, isPlaceholder } from "@/config/site";
 import { useI18n } from "@/lib/i18n/provider";
 
 const SUPPORT_EMAIL = "info@epinfox.com";
@@ -170,11 +170,14 @@ export function SiteFooter({ year }: { year: number }) {
               </span>
             ))}
           </div>
-          {/* ETBİS rozeti */}
-          <span className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/85">
-            <SealCheck size={18} weight="fill" className="text-success-400" />
-            {t("footer.etbis")}
-          </span>
+          {/* ETBİS rozeti — yalnızca gerçek kayıt no girildiyse göster.
+             Placeholder iken gizli: sahte/yanıltıcı yasal bilgi gösterilmez. */}
+          {!isPlaceholder(SITE.legal.etbis) && (
+            <span className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-white/85">
+              <SealCheck size={18} weight="fill" className="text-success-400" />
+              {t("footer.etbis")}
+            </span>
+          )}
         </div>
       </div>
 

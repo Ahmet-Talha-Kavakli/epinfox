@@ -15,7 +15,6 @@ export const tr: Dict = {
   "srv.pr.invalidAvatar": "Geçersiz avatar.",
   "srv.pr.invalidPhone": "Geçersiz telefon.",
   "srv.pr.invalidDate": "Geçersiz tarih.",
-  "srv.reseller.phoneRequired": "Bayilik başvurusu için önce telefonunu doğrulamalısın.",
   // kyc
   "srv.ky.fileType": "Sadece JPG, PNG veya WEBP yükleyebilirsin.",
   "srv.ky.fileSize": "Dosya en fazla 5 MB olabilir.",
@@ -57,7 +56,6 @@ export const en: Dict = {
   "srv.pr.invalidAvatar": "Invalid avatar.",
   "srv.pr.invalidPhone": "Invalid phone number.",
   "srv.pr.invalidDate": "Invalid date.",
-  "srv.reseller.phoneRequired": "You must verify your phone before applying as a reseller.",
   // kyc
   "srv.ky.fileType": "You can only upload JPG, PNG or WEBP.",
   "srv.ky.fileSize": "File can be at most 5 MB.",
@@ -99,7 +97,6 @@ export const de: Dict = {
   "srv.pr.invalidAvatar": "Ungültiger Avatar.",
   "srv.pr.invalidPhone": "Ungültige Telefonnummer.",
   "srv.pr.invalidDate": "Ungültiges Datum.",
-  "srv.reseller.phoneRequired": "Du musst dein Telefon verifizieren, bevor du dich als Händler bewirbst.",
   // kyc
   "srv.ky.fileType": "Du kannst nur JPG, PNG oder WEBP hochladen.",
   "srv.ky.fileSize": "Die Datei darf höchstens 5 MB groß sein.",
@@ -141,7 +138,6 @@ export const ar: Dict = {
   "srv.pr.invalidAvatar": "صورة رمزية غير صالحة.",
   "srv.pr.invalidPhone": "رقم هاتف غير صالح.",
   "srv.pr.invalidDate": "تاريخ غير صالح.",
-  "srv.reseller.phoneRequired": "يجب التحقق من هاتفك قبل التقدّم كوكيل.",
   // kyc
   "srv.ky.fileType": "يمكنك رفع JPG أو PNG أو WEBP فقط.",
   "srv.ky.fileSize": "يجب ألا يتجاوز حجم الملف 5 ميغابايت.",
@@ -183,7 +179,6 @@ export const ru: Dict = {
   "srv.pr.invalidAvatar": "Недопустимый аватар.",
   "srv.pr.invalidPhone": "Недопустимый номер телефона.",
   "srv.pr.invalidDate": "Недопустимая дата.",
-  "srv.reseller.phoneRequired": "Перед подачей заявки реселлера необходимо подтвердить телефон.",
   // kyc
   "srv.ky.fileType": "Можно загружать только JPG, PNG или WEBP.",
   "srv.ky.fileSize": "Файл может быть не более 5 МБ.",

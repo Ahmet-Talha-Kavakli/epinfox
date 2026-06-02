@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { randomBytes, createHash } from "node:crypto";
 import { z } from "zod";
-import { clerkClient } from "@clerk/nextjs/server";
 import { requireMember, requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getServerT } from "@/lib/i18n/server";
 import { notify } from "@/lib/notifications";
 import { TIER_DISCOUNT, TIER_LABEL } from "@/lib/reseller-meta";
 import type { ResellerTier } from "@/lib/supabase/types";
@@ -41,21 +39,6 @@ export async function applyForReseller(
   const current = await requireMember();
   const supabase = await createAdminClient();
   const d = parsed.data;
-
-  // Telefon doğrulama ZORUNLU (Clerk verified phone). Client disabled atlanabilir
-  // → server-side şart. Tek kaynak Clerk.
-  try {
-    const clerk = await clerkClient();
-    const cu = await clerk.users.getUser(current.user.clerkUserId);
-    const phoneOk = cu.primaryPhoneNumber?.verification?.status === "verified";
-    if (!phoneOk) {
-      const t = await getServerT();
-      return { ok: false, error: t("srv.reseller.phoneRequired") };
-    }
-  } catch {
-    const t = await getServerT();
-    return { ok: false, error: t("srv.reseller.phoneRequired") };
-  }
 
   // Zaten aktif/bekleyen başvuru var mı?
   if (current.profile.reseller_status === "approved") {

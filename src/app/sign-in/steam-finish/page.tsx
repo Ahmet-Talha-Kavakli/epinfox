@@ -31,6 +31,8 @@ function SteamFinish() {
   };
   const clerk = useClerk() as unknown as {
     setActive?: (p: { session: string | null }) => Promise<void>;
+    user?: unknown;
+    session?: unknown;
   };
   const router = useRouter();
   const params = useSearchParams();
@@ -65,6 +67,15 @@ function SteamFinish() {
       window.location.href = "/sign-in/steam-email";
     };
 
+    // ZATEN GİRİŞ YAPILMIŞSA: ticket denemeye gerek yok (yoksa Clerk
+    // 'session_exists' verir). Backend session'ı zaten açmış olabiliyor →
+    // doğrudan steam-email'e geç (orası needsEmail'e göre karar verir).
+    if (clerk.user || clerk.session) {
+      setStep("zaten giriş var → yönlendiriliyor");
+      go();
+      return;
+    }
+
     const timeout = setTimeout(() => {
       setStep("timeout (15s)");
       setError(true);
@@ -87,14 +98,14 @@ function SteamFinish() {
         if (typeof signIn.create === "function") {
           setStep("signIn.create…");
           const cr = await signIn.create({ strategy: "ticket", ticket });
-          console.log("[steam] create err:", JSON.stringify(cr?.error), "status:", signIn.status);
+          if (cr?.error) throw cr.error; // session_exists vb. catch'te yönlendirilir
         }
 
         // create complete yapmadıysa ticket() dene.
         if (signIn.status !== "complete" && typeof signIn.ticket === "function") {
           setStep("signIn.ticket…");
           const tk = await signIn.ticket({ ticket });
-          console.log("[steam] ticket err:", JSON.stringify(tk?.error), "status:", signIn.status);
+          if (tk?.error) throw tk.error;
         }
 
         // status & createdSessionId signIn objesinin KENDİ alanları.
@@ -130,8 +141,18 @@ function SteamFinish() {
       } catch (e) {
         console.error("Steam finish error:", e);
         clearTimeout(timeout);
+        const errObj = e as {
+          code?: string;
+          errors?: { code?: string; longMessage?: string; message?: string }[];
+        };
+        const code = errObj?.code || errObj?.errors?.[0]?.code;
+        // 'session_exists' = zaten giriş yapılmış → hata değil, başarı. Yönlendir.
+        if (code === "session_exists") {
+          setStep("zaten giriş var → yönlendiriliyor");
+          go();
+          return;
+        }
         const msg = e instanceof Error ? e.message : String(e);
-        const errObj = e as { errors?: { longMessage?: string; message?: string }[] };
         const detail = errObj?.errors?.[0]?.longMessage || errObj?.errors?.[0]?.message || msg;
         setStep(`error: ${detail}`);
         setError(true);

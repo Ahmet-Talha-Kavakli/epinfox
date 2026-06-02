@@ -83,22 +83,24 @@ function SteamFinish() {
           return;
         }
 
-        // Ticket için özel metot varsa ONU kullan (create değil). ticket()
-        // sign-in state'ini status=complete + createdSessionId'e getirir.
-        if (typeof signIn.ticket === "function") {
-          setStep("signIn.ticket…");
-          const tk = await signIn.ticket({ ticket });
-          if (tk?.error) throw tk.error;
-        } else if (typeof signIn.create === "function") {
+        // 1) create({strategy:"ticket", ticket}) — belgelenmiş param yapısı.
+        if (typeof signIn.create === "function") {
           setStep("signIn.create…");
           const cr = await signIn.create({ strategy: "ticket", ticket });
-          if (cr?.error) throw cr.error;
+          console.log("[steam] create err:", JSON.stringify(cr?.error), "status:", signIn.status);
+        }
+
+        // create complete yapmadıysa ticket() dene.
+        if (signIn.status !== "complete" && typeof signIn.ticket === "function") {
+          setStep("signIn.ticket…");
+          const tk = await signIn.ticket({ ticket });
+          console.log("[steam] ticket err:", JSON.stringify(tk?.error), "status:", signIn.status);
         }
 
         // status & createdSessionId signIn objesinin KENDİ alanları.
         const sid = signIn.createdSessionId;
         const status = signIn.status;
-        console.log("[steam] after ticket — status:", status, "sid:", sid);
+        console.log("[steam] final — status:", status, "sid:", sid);
         setStep(`status=${status} sid=${sid ? sid.slice(0, 10) : "yok"}`);
 
         // status=complete → finalize ile session'ı aktive et + yönlendir.

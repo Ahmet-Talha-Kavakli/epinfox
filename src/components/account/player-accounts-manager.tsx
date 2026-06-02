@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   GameController,
   Check,
@@ -104,7 +105,9 @@ export function PlayerAccountsManager({
               )}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+                <div className="flex min-w-0 items-start gap-3">
+                  <PlatformLogo slug={p.slug} label={p.label} />
+                  <div className="min-w-0">
                   <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
                     {p.label}
                     {saved && !isEditing && (
@@ -118,6 +121,7 @@ export function PlayerAccountsManager({
                   ) : (
                     <p className="mt-0.5 text-xs text-ink-400">{p.hint}</p>
                   )}
+                  </div>
                 </div>
                 {saved && !isEditing && (
                   <div className="flex shrink-0 gap-1">
@@ -185,5 +189,29 @@ export function PlayerAccountsManager({
         })}
       </div>
     </div>
+  );
+}
+
+/** Platform logosu — /brands/<slug>-banner.webp yuvarlak kırpılır; yoksa ikon. */
+function PlatformLogo({ slug, label }: { slug: string; label: string }) {
+  const [ok, setOk] = useState(true);
+  if (!ok) {
+    return (
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-brand-600">
+        <GameController size={20} weight="duotone" />
+      </span>
+    );
+  }
+  return (
+    <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl ring-1 ring-ink-200">
+      <Image
+        src={`/brands/${slug}-banner.webp`}
+        alt={label}
+        fill
+        sizes="40px"
+        className="object-cover"
+        onError={() => setOk(false)}
+      />
+    </span>
   );
 }

@@ -176,6 +176,10 @@ export const tr: Dict = {
   "acct.social.title": "Sosyal Bağlantılarım",
   "acct.social.desc":
     "Hesabını sosyal sağlayıcılarla bağla ve bildirim entegrasyonlarını yönet.",
+  "acct.social.profilesTitle": "Sosyal Profillerin",
+  "acct.social.profilesDesc": "Sosyal medya kullanıcı adlarını ekle — profilinde görünür ve destek/etkileşim için kullanılır.",
+  "acct.social.save": "Kaydet",
+  "acct.social.saved": "Sosyal profiller kaydedildi.",
   "acct.social.oauthTitle": "Oturuma Bağlı Hesaplar",
   "acct.social.oauthDesc":
     "Hesabını sosyal sağlayıcılarla bağla; tek tıkla giriş yap ve hesabını güçlendir.",
@@ -595,6 +599,10 @@ export const en: Dict = {
   "acct.social.title": "My Social Links",
   "acct.social.desc":
     "Connect your account with social providers and manage notification integrations.",
+  "acct.social.profilesTitle": "Your Social Profiles",
+  "acct.social.profilesDesc": "Add your social media usernames — shown on your profile and used for support/engagement.",
+  "acct.social.save": "Save",
+  "acct.social.saved": "Social profiles saved.",
   "acct.social.oauthTitle": "Session-Linked Accounts",
   "acct.social.oauthDesc":
     "Connect your account with social providers; sign in with one click and strengthen your account.",
@@ -1003,6 +1011,10 @@ export const de: Dict = {
   "acct.social.title": "Meine sozialen Verknüpfungen",
   "acct.social.desc":
     "Verbinde dein Konto mit sozialen Anbietern und verwalte Benachrichtigungs-Integrationen.",
+  "acct.social.profilesTitle": "Deine Social-Profile",
+  "acct.social.profilesDesc": "Füge deine Social-Media-Benutzernamen hinzu — auf deinem Profil sichtbar, für Support/Interaktion genutzt.",
+  "acct.social.save": "Speichern",
+  "acct.social.saved": "Social-Profile gespeichert.",
   "acct.social.oauthTitle": "An die Sitzung gebundene Konten",
   "acct.social.oauthDesc":
     "Verbinde dein Konto mit sozialen Anbietern; melde dich mit einem Klick an und stärke dein Konto.",
@@ -1405,6 +1417,10 @@ export const ar: Dict = {
   "acct.social.title": "روابطي الاجتماعية",
   "acct.social.desc":
     "اربط حسابك بمزوّدي التواصل وأدِر تكاملات الإشعارات.",
+  "acct.social.profilesTitle": "ملفاتك الاجتماعية",
+  "acct.social.profilesDesc": "أضف أسماء المستخدمين على وسائل التواصل — تظهر في ملفك وتُستخدم للدعم/التفاعل.",
+  "acct.social.save": "حفظ",
+  "acct.social.saved": "تم حفظ الملفات الاجتماعية.",
   "acct.social.oauthTitle": "الحسابات المرتبطة بالجلسة",
   "acct.social.oauthDesc":
     "اربط حسابك بمزوّدي التواصل؛ سجّل الدخول بنقرة واحدة وعزّز حسابك.",
@@ -1812,6 +1828,10 @@ export const ru: Dict = {
   "acct.social.title": "Мои соцсвязи",
   "acct.social.desc":
     "Свяжите аккаунт с социальными провайдерами и управляйте интеграциями уведомлений.",
+  "acct.social.profilesTitle": "Ваши соцпрофили",
+  "acct.social.profilesDesc": "Добавьте имена пользователей в соцсетях — отображаются в профиле, используются для поддержки/взаимодействия.",
+  "acct.social.save": "Сохранить",
+  "acct.social.saved": "Соцпрофили сохранены.",
   "acct.social.oauthTitle": "Связанные с сессией аккаунты",
   "acct.social.oauthDesc":
     "Свяжите аккаунт с социальными провайдерами; входите в один клик и усильте аккаунт.",

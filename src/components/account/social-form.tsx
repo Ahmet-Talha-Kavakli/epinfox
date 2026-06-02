@@ -8,16 +8,30 @@ import {
   LinkBreak,
   CircleNotch,
   Check,
+  InstagramLogo,
+  TiktokLogo,
+  DiscordLogo,
+  FloppyDisk,
 } from "@phosphor-icons/react";
 import {
   GoogleLogo,
-  FacebookLogo,
   SteamLogo,
   TelegramLogo,
+  XLogo,
   type BrandLogo,
 } from "@/components/account/brand-logos";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { updateSocialLinks } from "@/lib/actions/account-extras";
+
+export interface SocialInitial {
+  instagram: string;
+  tiktok: string;
+  steam: string;
+  discord: string;
+  x: string;
+}
 
 /* Sosyal Bağlantılarım — GERÇEK bağlantılar.
    - Oturuma bağlı hesaplar: Clerk OAuth (Facebook/Google/Steam) — createExternalAccount.
@@ -40,13 +54,6 @@ const WebhookLogo: BrandLogo = ({ size = 24 }) => (
 
 const OAUTH_PROVIDERS: OAuthProvider[] = [
   {
-    key: "facebook",
-    strategy: "oauth_facebook",
-    label: "Facebook",
-    icon: FacebookLogo,
-    cls: "bg-white ring-1 ring-ink-200",
-  },
-  {
     key: "google",
     strategy: "oauth_google",
     label: "Google",
@@ -60,6 +67,22 @@ const OAUTH_PROVIDERS: OAuthProvider[] = [
     icon: SteamLogo,
     cls: "bg-[#171a21]",
   },
+];
+
+// Sosyal profil alanları (kullanıcı adı girişi → updateSocialLinks).
+const SOCIAL_FIELDS: {
+  key: keyof SocialInitial;
+  label: string;
+  icon: BrandLogo;
+  iconCls: string;
+  prefix: string;
+  placeholder: string;
+}[] = [
+  { key: "instagram", label: "Instagram", icon: ({ size = 24 }) => <InstagramLogo size={size} weight="fill" />, iconCls: "bg-gradient-to-br from-[#feda75] via-[#d62976] to-[#4f5bd5] text-white", prefix: "@", placeholder: "kullaniciadi" },
+  { key: "tiktok", label: "TikTok", icon: ({ size = 24 }) => <TiktokLogo size={size} weight="fill" />, iconCls: "bg-black text-white", prefix: "@", placeholder: "kullaniciadi" },
+  { key: "x", label: "X (Twitter)", icon: XLogo, iconCls: "bg-black text-white", prefix: "@", placeholder: "kullaniciadi" },
+  { key: "steam", label: "Steam", icon: SteamLogo, iconCls: "bg-[#171a21] text-white", prefix: "", placeholder: "profil adı / ID" },
+  { key: "discord", label: "Discord", icon: ({ size = 24 }) => <DiscordLogo size={size} weight="fill" />, iconCls: "bg-[#5865F2] text-white", prefix: "", placeholder: "kullaniciadi#0000" },
 ];
 
 const INTEGRATIONS: {
@@ -82,12 +105,35 @@ const INTEGRATIONS: {
   },
 ];
 
-export function SocialForm() {
+export function SocialForm({ initial }: { initial: SocialInitial }) {
   const { user, isLoaded } = useUser();
   const { t } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Sosyal profil kullanıcı adları (kaydedilen).
+  const [social, setSocial] = useState<SocialInitial>(initial);
+  const [savingSocial, startSaveSocial] = useTransition();
+  const [socialMsg, setSocialMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  function saveSocial() {
+    setSocialMsg(null);
+    startSaveSocial(async () => {
+      const r = await updateSocialLinks({
+        instagram: social.instagram,
+        tiktok: social.tiktok,
+        steam: social.steam,
+        discord: social.discord,
+        x: social.x,
+      });
+      setSocialMsg(
+        r.ok
+          ? { ok: true, text: t("acct.social.saved") }
+          : { ok: false, text: r.error },
+      );
+    });
+  }
 
   const linkedStrategies = new Set<string>(
     (user?.externalAccounts ?? [])
@@ -158,6 +204,72 @@ export function SocialForm() {
 
   return (
     <div className="space-y-8">
+      {/* ─── Sosyal profiller (kullanıcı adı kaydı) ─── */}
+      <section>
+        <h2 className="text-lg font-bold text-ink-900">{t("acct.social.profilesTitle")}</h2>
+        <p className="mt-1 text-sm text-ink-500">{t("acct.social.profilesDesc")}</p>
+
+        <div className="mt-4 space-y-3">
+          {SOCIAL_FIELDS.map((f) => (
+            <div
+              key={f.key}
+              className="flex items-center gap-3 rounded-2xl border border-ink-200 bg-white p-3"
+            >
+              <span
+                className={cn(
+                  "grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl",
+                  f.iconCls,
+                )}
+              >
+                <f.icon size={24} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="mb-1 text-xs font-medium text-ink-500">{f.label}</p>
+                <div className="flex items-center">
+                  {f.prefix && (
+                    <span className="select-none pr-1 text-sm text-ink-400">{f.prefix}</span>
+                  )}
+                  <Input
+                    value={social[f.key]}
+                    onChange={(e) =>
+                      setSocial((s) => ({ ...s, [f.key]: e.target.value }))
+                    }
+                    placeholder={f.placeholder}
+                    className="h-9"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={saveSocial}
+            disabled={savingSocial}
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+          >
+            {savingSocial ? (
+              <CircleNotch size={16} className="animate-spin" />
+            ) : (
+              <FloppyDisk size={16} weight="fill" />
+            )}
+            {t("acct.social.save")}
+          </button>
+          {socialMsg && (
+            <span
+              className={cn(
+                "text-sm font-medium",
+                socialMsg.ok ? "text-success-600" : "text-danger-600",
+              )}
+            >
+              {socialMsg.text}
+            </span>
+          )}
+        </div>
+      </section>
+
       {/* ─── Oturuma bağlı hesaplar (OAuth) ─── */}
       <section>
         <h2 className="text-lg font-bold text-ink-900">{t("acct.social.oauthTitle")}</h2>

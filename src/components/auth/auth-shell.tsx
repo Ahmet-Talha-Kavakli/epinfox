@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,29 +12,12 @@ import {
 } from "@phosphor-icons/react";
 import { useI18n } from "@/lib/i18n/provider";
 
-/** Maskot görseli — dosya yoksa (henüz üretilmediyse) kendini gizler. */
-function AuthHeroImage({ src }: { src: string }) {
-  const [ok, setOk] = useState(true);
-  if (!ok) return null;
-  return (
-    <div className="relative flex justify-center">
-      {/* tabandaki yumuşak ışık halkası */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-2 mx-auto h-24 w-48 rounded-full bg-accent-500/25 blur-2xl" />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt=""
-        className="relative h-auto w-60 drop-shadow-2xl"
-        onError={() => setOk(false)}
-      />
-    </div>
-  );
-}
-
 /**
- * Auth ekranları için ortak split layout: sol marka paneli (gradient + maskot +
- * güven/sosyal kanıt rozetleri), sağ form alanı. Form içeriği children olarak
- * gelir (sign-in / sign-up custom formları). Mantık değişmez, yalnızca görünüm.
+ * Auth ekranları için TAM EKRAN split layout:
+ *  - Sol: full-height kapak görseli (üstte marka + altta güven rozetleri overlay).
+ *  - Sağ: kaydırılabilir form alanı.
+ *  - Tüm ekranı kaplar (fixed inset-0), sayfa scroll'u KİLİTLİ (body overflow hidden).
+ * Form içeriği children olarak gelir (sign-in / sign-up). Mantık değişmez.
  */
 export function AuthShell({
   title,
@@ -48,6 +31,20 @@ export function AuthShell({
   heroImage?: string;
 }) {
   const { t } = useI18n();
+  const [imgOk, setImgOk] = useState(true);
+
+  // Sayfa scroll'unu kilitle (yalnızca bu sayfa açıkken).
+  useEffect(() => {
+    const html = document.documentElement;
+    const prevHtml = html.style.overflow;
+    const prevBody = document.body.style.overflow;
+    html.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, []);
 
   const trust = [
     { icon: Lightning, label: t("auth.trust.instant") },
@@ -56,119 +53,120 @@ export function AuthShell({
   ];
 
   return (
-    <section className="relative flex flex-1 items-center justify-center overflow-hidden py-10">
-      {/* Sayfa arka planı — yumuşak marka glow'ları */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl" />
-        <div className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent-200/40 blur-3xl" />
-      </div>
-
-      <div className="container-page">
-        <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-[28px] border border-ink-200 bg-white shadow-float lg:grid-cols-[1.05fr_1fr]">
-          {/* ─── Sol marka paneli ─── */}
-          <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-[#0b1220] via-[#152038] to-[#16223b] p-10 text-white lg:flex">
-            {/* dekoratif: grid pattern + glow */}
+    <div className="fixed inset-0 z-[60] grid bg-white lg:grid-cols-[1.1fr_1fr]">
+      {/* ─── SOL: full görsel ─── */}
+      <div className="relative hidden overflow-hidden bg-[#0b1220] lg:block">
+        {imgOk ? (
+          <Image
+            src={heroImage}
+            alt=""
+            fill
+            priority
+            sizes="55vw"
+            className="object-cover"
+            onError={() => setImgOk(false)}
+          />
+        ) : (
+          // Görsel yoksa marka gradyanı + grid pattern fallback.
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0b1220] via-[#152038] to-[#16223b]">
             <div
-              className="pointer-events-none absolute inset-0 opacity-[0.06]"
+              className="absolute inset-0 opacity-[0.07]"
               style={{
                 backgroundImage:
                   "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
                 backgroundSize: "32px 32px",
               }}
             />
-            <div className="pointer-events-none absolute -right-16 top-8 h-64 w-64 rounded-full bg-brand-500/30 blur-3xl" />
-            <div className="pointer-events-none absolute -left-10 bottom-0 h-56 w-56 rounded-full bg-accent-500/25 blur-3xl" />
+            <div className="absolute -right-16 top-10 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-accent-500/25 blur-3xl" />
+          </div>
+        )}
 
-            {/* üst: logo + başlık */}
-            <div className="relative">
-              <Link href="/" className="inline-flex items-center gap-2">
-                <Image
-                  src="/brand/logo-fox.png"
-                  alt="EpinFox"
-                  width={44}
-                  height={44}
-                  className="rounded-xl ring-1 ring-white/15"
-                />
-                <span className="text-xl font-extrabold tracking-tight">
-                  Epin<span className="text-accent-400">Fox</span>
+        {/* okunabilirlik için alttan koyu degrade */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
+
+        {/* üst: logo */}
+        <div className="absolute inset-x-0 top-0 p-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-white">
+            <Image
+              src="/brand/logo-fox.png"
+              alt="EpinFox"
+              width={42}
+              height={42}
+              className="rounded-xl ring-1 ring-white/15"
+            />
+            <span className="text-xl font-extrabold tracking-tight">
+              Epin<span className="text-accent-400">Fox</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* alt: başlık + sosyal kanıt + güven rozetleri */}
+        <div className="absolute inset-x-0 bottom-0 p-8 text-white">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium backdrop-blur">
+            <span className="flex -space-x-1">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="grid h-5 w-5 place-items-center rounded-full bg-accent-500/90 ring-2 ring-black/40"
+                >
+                  <Users size={11} weight="fill" />
                 </span>
-              </Link>
-
-              {/* sosyal kanıt rozeti */}
-              <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur">
-                <span className="flex -space-x-1">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      className="grid h-5 w-5 place-items-center rounded-full bg-accent-500/90 ring-2 ring-[#0b1220]"
-                    >
-                      <Users size={11} weight="fill" />
-                    </span>
-                  ))}
-                </span>
-                {t("auth.panel.socialProof")}
-              </div>
-
-              <h2 className="mt-5 text-[28px] font-extrabold leading-tight">
-                {t("auth.panel.title")}
-              </h2>
-              <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-white/70">
-                {t("auth.panel.subtitle")}
-              </p>
-            </div>
-
-            {/* orta: maskot */}
-            <AuthHeroImage src={heroImage} />
-
-            {/* alt: güven rozetleri + yıldız */}
-            <div className="relative">
-              <div className="mb-4 flex items-center gap-1.5 text-sm text-white/85">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} size={15} weight="fill" className="text-accent-400" />
-                ))}
-                <span className="ml-1.5 font-semibold">{t("auth.panel.rating")}</span>
-              </div>
-              <ul className="space-y-2.5">
-                {trust.map(({ icon: Icon, label }) => (
-                  <li
-                    key={label}
-                    className="flex items-center gap-3 text-sm text-white/90"
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 ring-1 ring-white/10">
-                      <Icon size={18} weight="duotone" className="text-accent-400" />
-                    </span>
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            </div>
+              ))}
+            </span>
+            {t("auth.panel.socialProof")}
           </div>
 
-          {/* ─── Sağ form alanı ─── */}
-          <div className="flex flex-col justify-center px-6 py-10 sm:px-12">
-            {/* mobil logo */}
-            <Link href="/" className="mb-6 inline-flex items-center gap-2 lg:hidden">
-              <Image
-                src="/brand/logo-fox.png"
-                alt="EpinFox"
-                width={36}
-                height={36}
-                className="rounded-lg"
-              />
-              <span className="text-lg font-extrabold tracking-tight text-ink-900">
-                Epin<span className="text-accent-500">Fox</span>
-              </span>
-            </Link>
+          <h2 className="max-w-md text-[28px] font-extrabold leading-tight drop-shadow">
+            {t("auth.panel.title")}
+          </h2>
+          <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-white/85 drop-shadow">
+            {t("auth.panel.subtitle")}
+          </p>
 
-            <h1 className="text-[26px] font-extrabold tracking-tight text-ink-900">
-              {title}
-            </h1>
-            <p className="mt-1.5 text-[15px] text-ink-500">{subtitle}</p>
-
-            <div className="mt-7">{children}</div>
+          <div className="mt-4 flex items-center gap-1.5 text-sm">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} size={15} weight="fill" className="text-accent-400" />
+            ))}
+            <span className="ml-1.5 font-semibold">{t("auth.panel.rating")}</span>
           </div>
+
+          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            {trust.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-2 text-sm text-white/90">
+                <Icon size={16} weight="duotone" className="text-accent-400" />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-    </section>
+
+      {/* ─── SAĞ: form (kendi içinde kaydırılır) ─── */}
+      <div className="flex h-full flex-col overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10 sm:px-10">
+          {/* mobil logo */}
+          <Link href="/" className="mb-6 inline-flex items-center gap-2 lg:hidden">
+            <Image
+              src="/brand/logo-fox.png"
+              alt="EpinFox"
+              width={36}
+              height={36}
+              className="rounded-lg"
+            />
+            <span className="text-lg font-extrabold tracking-tight text-ink-900">
+              Epin<span className="text-accent-500">Fox</span>
+            </span>
+          </Link>
+
+          <h1 className="text-[26px] font-extrabold tracking-tight text-ink-900">
+            {title}
+          </h1>
+          <p className="mt-1.5 text-[15px] text-ink-500">{subtitle}</p>
+
+          <div className="mt-7">{children}</div>
+        </div>
+      </div>
+    </div>
   );
 }

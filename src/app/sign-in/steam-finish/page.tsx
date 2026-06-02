@@ -74,44 +74,47 @@ function SteamFinish() {
 
     (async () => {
       try {
-        // Bu fork: create({strategy:"ticket"}) sign-in'i status=complete yapıp
-        // client'a session'ı kaydeder; finalize() onu aktive eder + yönlendirir.
-        // (Önceki denemede ticket()+finalize() "no created session" verdi —
-        // ticket() session oluşturmuyor; create() oluşturuyor.)
-        if (typeof signIn.create === "function") {
-          setStep("signIn.create…");
-          const res = await signIn.create({ strategy: "ticket", ticket });
-          const sid = res?.createdSessionId;
-          setStep(`create: status=${res?.status} sid=${!!sid}`);
+        // TEŞHİS: signIn objesinin gerçek metot/alanlarını gör.
+        const keys = Object.keys(signIn as object).join(",");
+        console.log("[steam] signIn keys:", keys);
 
-          // 1) finalize varsa onunla aktive et (Future deseni)
-          if (typeof signIn.finalize === "function") {
-            setStep("signIn.finalize…");
-            const fin = await signIn.finalize({ navigate: go });
-            if (fin?.error) throw fin.error;
-            clearTimeout(timeout);
-            setStep("redirecting…");
-            go();
-            return;
-          }
-
-          // 2) yoksa setActive ile (klasik)
-          if (sid && clerk.setActive) {
-            setStep("setActive…");
-            await clerk.setActive({ session: sid });
-            clearTimeout(timeout);
-            setStep("redirecting…");
-            go();
-            return;
-          }
-
-          setStep(`create ok ama session aktive edilemedi (status=${res?.status})`);
+        if (typeof signIn.create !== "function") {
+          setStep(`no create. keys=${keys}`);
           clearTimeout(timeout);
           setError(true);
           return;
         }
 
-        setStep("no create method");
+        setStep("signIn.create…");
+        const res = await signIn.create({ strategy: "ticket", ticket });
+        const sid = res?.createdSessionId;
+        const status = res?.status;
+        console.log("[steam] create result:", JSON.stringify(res));
+        setStep(`create: status=${status} sid=${sid ? sid.slice(0, 10) : "yok"}`);
+
+        // Session ID DÖNDÜYSE setActive ile aktive et (en güvenli yol).
+        if (sid && clerk.setActive) {
+          setStep("setActive…");
+          await clerk.setActive({ session: sid });
+          clearTimeout(timeout);
+          setStep("redirecting…");
+          go();
+          return;
+        }
+
+        // Session id yok ama status complete + finalize varsa finalize dene.
+        if (status === "complete" && typeof signIn.finalize === "function") {
+          setStep("signIn.finalize…");
+          const fin = await signIn.finalize({ navigate: go });
+          if (fin?.error) throw fin.error;
+          clearTimeout(timeout);
+          setStep("redirecting…");
+          go();
+          return;
+        }
+
+        // Hiçbiri olmadı — status'u göster (en kritik teşhis bilgisi).
+        setStep(`session yok. status=${status}, finalize=${typeof signIn.finalize}`);
         clearTimeout(timeout);
         setError(true);
       } catch (e) {

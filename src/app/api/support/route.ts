@@ -468,7 +468,15 @@ export async function POST(req: Request) {
     /* misafir */
   }
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  // Gemini'nin OpenAI-uyumlu endpoint'i üzerinden konuşuruz (tool-calling +
+  // vision desteklenir). Mevcut OpenAI SDK akışı aynen çalışır; yalnızca
+  // baseURL + apiKey + model adı Gemini'ye göre. (Türkiye'de Clerk SMS gibi
+  // bölge kısıtı yok; Gemini TR'den erişilebilir.)
+  const openai = new OpenAI({
+    apiKey: process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENAI_API_KEY ?? "",
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  });
+  const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
   const systemPrompt = `Sen ${SITE.name} adlı Türk dijital ürün/e-pin satış platformunun yardımcı, samimi ve kısa konuşan destek asistanısın. Yalnızca platformla ilgili konularda yardım et. Bilmediğini uydurma; emin değilsen /contact üzerinden insan desteğe yönlendir. Türkçe, kısa ve net yanıt ver.
 
@@ -508,7 +516,7 @@ ${FAQ}`;
     // Tool-calling döngüsü (en fazla 3 tur).
     for (let turn = 0; turn < 3; turn++) {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: MODEL,
         messages: convo,
         tools,
         tool_choice: "auto",
@@ -546,7 +554,7 @@ ${FAQ}`;
 
     // Döngü tool ile doldu, son bir özet iste.
     const final = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: MODEL,
       messages: convo,
       max_tokens: 450,
       temperature: 0.4,
@@ -556,7 +564,7 @@ ${FAQ}`;
       "Üzgünüm, şu an yanıt veremedim. Lütfen tekrar dene.";
     return NextResponse.json({ reply });
   } catch (e) {
-    console.error("OpenAI error:", (e as Error).message);
+    console.error("Gemini error:", (e as Error).message);
     return NextResponse.json(
       { error: "Asistana ulaşılamadı. Lütfen biraz sonra tekrar dene." },
       { status: 502 },

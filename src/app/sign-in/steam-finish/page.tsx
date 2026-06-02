@@ -74,39 +74,44 @@ function SteamFinish() {
 
     (async () => {
       try {
-        // Future API (bu fork'un yolu): ticket → finalize. finalize session'ı
-        // aktive eder ve navigate ile yönlendirir.
-        if (typeof signIn.ticket === "function" && typeof signIn.finalize === "function") {
-          setStep("signIn.ticket…");
-          const tk = await signIn.ticket({ ticket });
-          if (tk?.error) throw tk.error;
-          setStep("signIn.finalize…");
-          const fin = await signIn.finalize({ navigate: go });
-          if (fin?.error) throw fin.error;
-          clearTimeout(timeout);
-          setStep("redirecting…");
-          // finalize navigate'i çağırmadıysa biz yönlendirelim (emniyet).
-          go();
-          return;
-        }
-
-        // Klasik fallback: create + setActive
+        // Bu fork: create({strategy:"ticket"}) sign-in'i status=complete yapıp
+        // client'a session'ı kaydeder; finalize() onu aktive eder + yönlendirir.
+        // (Önceki denemede ticket()+finalize() "no created session" verdi —
+        // ticket() session oluşturmuyor; create() oluşturuyor.)
         if (typeof signIn.create === "function") {
           setStep("signIn.create…");
           const res = await signIn.create({ strategy: "ticket", ticket });
           const sid = res?.createdSessionId;
-          setStep(`create done (status=${res?.status}, sid=${!!sid})`);
+          setStep(`create: status=${res?.status} sid=${!!sid}`);
+
+          // 1) finalize varsa onunla aktive et (Future deseni)
+          if (typeof signIn.finalize === "function") {
+            setStep("signIn.finalize…");
+            const fin = await signIn.finalize({ navigate: go });
+            if (fin?.error) throw fin.error;
+            clearTimeout(timeout);
+            setStep("redirecting…");
+            go();
+            return;
+          }
+
+          // 2) yoksa setActive ile (klasik)
           if (sid && clerk.setActive) {
             setStep("setActive…");
             await clerk.setActive({ session: sid });
+            clearTimeout(timeout);
+            setStep("redirecting…");
+            go();
+            return;
           }
+
+          setStep(`create ok ama session aktive edilemedi (status=${res?.status})`);
           clearTimeout(timeout);
-          setStep("redirecting…");
-          go();
+          setError(true);
           return;
         }
 
-        setStep("no usable method");
+        setStep("no create method");
         clearTimeout(timeout);
         setError(true);
       } catch (e) {

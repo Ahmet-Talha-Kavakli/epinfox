@@ -78,6 +78,9 @@ export async function GET(req: NextRequest) {
           steamName,
           steamAvatar,
           fullName: steamName,
+          // Sitede görünen ad: Steam ismi (steam_<id> yerine). ensureProfile
+          // bunu okuyup profiles.nickname'e yazar.
+          nickname: steamName,
         },
       });
       userId = created.id;

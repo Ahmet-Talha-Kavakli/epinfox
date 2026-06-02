@@ -70,9 +70,13 @@ async function ensureProfile(
       cu.emailAddresses[0]?.emailAddress ??
       "";
     const meta = cu.unsafeMetadata as Record<string, unknown> | undefined;
+    // Steam kullanıcısında username "steam_<id>" olur; onun yerine Steam ismini
+    // (metadata.nickname/steamName) tercih et. username steam_ ile başlıyorsa atla.
+    const username = cu.username?.trim() ?? "";
     const baseNickname = sanitizeNickname(
       (typeof meta?.nickname === "string" && meta.nickname.trim()) ||
-        cu.username?.trim() ||
+        (typeof meta?.steamName === "string" && meta.steamName.trim()) ||
+        (username.startsWith("steam_") ? "" : username) ||
         email.split("@")[0] ||
         `kullanici-${clerkUserId.slice(-6)}`,
     );

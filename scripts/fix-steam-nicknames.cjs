@@ -11,7 +11,8 @@ const get = (k) => {
   return m ? m[1].trim().replace(/^["']|["']$/g, "") : null;
 };
 const dbUrl = get("DATABASE_URL");
-const clerkSk = get("CLERK_SECRET_KEY");
+// process.env önceliklidir (sk_live'i .env.local'i değiştirmeden geçici verebilmek için).
+const clerkSk = process.env.CLERK_SECRET_KEY || get("CLERK_SECRET_KEY");
 
 function sanitize(raw) {
   const clean = String(raw)

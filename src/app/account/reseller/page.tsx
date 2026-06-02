@@ -136,6 +136,7 @@ export default async function AccountResellerPage() {
         rejected={p.reseller_status === "rejected"}
         rejectReason={rejectReason}
         kycApproved={p.kyc_status === "approved"}
+        phoneVerified={p.phone_verified_at != null}
       />
     </AccountShell>
   );

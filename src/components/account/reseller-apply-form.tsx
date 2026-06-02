@@ -31,10 +31,12 @@ export function ResellerApplyForm({
   rejected,
   rejectReason,
   kycApproved,
+  phoneVerified,
 }: {
   rejected?: boolean;
   rejectReason?: string | null;
   kycApproved: boolean;
+  phoneVerified: boolean;
 }) {
   const router = useRouter();
   const { t } = useI18n();
@@ -119,6 +121,35 @@ export function ResellerApplyForm({
                 {t("acct.reseller.apply.kycNeededLink")}
               </Link>
               {t("acct.reseller.apply.kycNeededSuffix")}
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* Telefon doğrulama durumu (bayilik için ZORUNLU) */}
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-2xl border p-4 text-sm",
+          phoneVerified
+            ? "border-success-200 bg-success-50/60 text-success-700"
+            : "border-warning-200 bg-warning-50/60 text-warning-700",
+        )}
+      >
+        {phoneVerified ? (
+          <ShieldCheck size={20} weight="fill" className="shrink-0" />
+        ) : (
+          <ShieldWarning size={20} weight="fill" className="shrink-0" />
+        )}
+        <p>
+          {phoneVerified ? (
+            t("acct.reseller.apply.phoneVerified")
+          ) : (
+            <>
+              {t("acct.reseller.apply.phoneNeededPrefix")}
+              <Link href="/account/settings" className="font-semibold underline">
+                {t("acct.reseller.apply.phoneNeededLink")}
+              </Link>
+              {t("acct.reseller.apply.phoneNeededSuffix")}
             </>
           )}
         </p>
@@ -238,7 +269,13 @@ export function ResellerApplyForm({
 
         <Button
           onClick={submit}
-          disabled={pending || !companyName.trim() || !contactName.trim() || phone.trim().length < 7}
+          disabled={
+            pending ||
+            !phoneVerified ||
+            !companyName.trim() ||
+            !contactName.trim() ||
+            phone.trim().length < 7
+          }
           className="mt-5"
         >
           {pending ? (

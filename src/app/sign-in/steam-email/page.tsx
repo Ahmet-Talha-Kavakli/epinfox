@@ -24,7 +24,9 @@ type ClerkErr = { code?: string; message?: string } | undefined;
  * kendini /'a yönlendirir (zaten doğrulanmış kullanıcı buraya düşmesin).
  */
 function SteamEmail() {
-  const { isLoaded, user } = useUser();
+  // Bu Clerk v7 Signals fork'unda useUser().isLoaded undefined gelebiliyor;
+  // user objesinin varlığını esas alıyoruz (steam-finish ile aynı sebep).
+  const { user } = useUser();
   const { signOut } = useClerk();
   const { t } = useI18n();
   const router = useRouter();
@@ -36,13 +38,15 @@ function SteamEmail() {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  // needsEmail durumu: yüklenmeyi bekle. Doğrulanmış (ya da Steam dışı) kullanıcı
-  // buraya düşmesin → /'a yönlendir. Render İÇİNDE değil useEffect'te yapılır
-  // (render-içi router.replace sonsuz re-render döngüsü yaratır).
-  const needsEmail = isLoaded && user?.publicMetadata?.needsEmail === true;
+  // user yüklendi mi? (undefined = yükleniyor, null/obje = yüklendi)
+  const userLoaded = user !== undefined;
+  const needsEmail = !!user && user.publicMetadata?.needsEmail === true;
+
+  // Doğrulanmış (ya da Steam dışı / oturumsuz) kullanıcı buraya düşmesin → /'a.
+  // Render İÇİNDE değil useEffect'te (render-içi replace sonsuz döngü yaratır).
   useEffect(() => {
-    if (isLoaded && !needsEmail) router.replace("/");
-  }, [isLoaded, needsEmail, router]);
+    if (userLoaded && !needsEmail) router.replace("/");
+  }, [userLoaded, needsEmail, router]);
 
   function mapError(err: ClerkErr): string {
     const map: Record<string, string> = {
@@ -54,8 +58,8 @@ function SteamEmail() {
     return (err?.code && map[err.code]) || err?.message || t("auth.err.generic");
   }
 
-  // Clerk yüklenene kadar VEYA yönlendirme kararı verilene kadar spinner göster
-  if (!isLoaded || !needsEmail) {
+  // user yüklenene kadar VEYA yönlendirme kararı verilene kadar spinner göster
+  if (!userLoaded || !needsEmail) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center py-24">
         <SpinnerGap size={32} className="animate-spin text-brand-500" />

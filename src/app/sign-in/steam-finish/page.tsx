@@ -18,7 +18,7 @@ import { useI18n } from "@/lib/i18n/provider";
  */
 function SteamFinish() {
   const signInHook = useSignIn() as unknown as {
-    isLoaded: boolean;
+    isLoaded?: boolean;
     signIn?: {
       create?: (p: { strategy: "ticket"; ticket: string }) => Promise<{
         status?: string;
@@ -38,11 +38,15 @@ function SteamFinish() {
   const ran = useRef(false);
 
   const debug = params.get("debug") === "1";
-  const { isLoaded, signIn } = signInHook;
+  const { signIn } = signInHook;
 
   useEffect(() => {
-    if (!isLoaded || !signIn) {
-      setStep(`waiting clerk (isLoaded=${isLoaded}, signIn=${!!signIn})`);
+    // Bu Clerk v7 Signals fork'unda useSignIn().isLoaded undefined gelebiliyor;
+    // signIn objesinin (ve ticket metotlarının) varlığını esas alıyoruz.
+    const hasTicketMethod =
+      typeof signIn?.create === "function" || typeof signIn?.ticket === "function";
+    if (!signIn || !hasTicketMethod) {
+      setStep(`waiting clerk (signIn=${!!signIn})`);
       return;
     }
     if (ran.current) return;
@@ -106,7 +110,7 @@ function SteamFinish() {
     })();
 
     return () => clearTimeout(timeout);
-  }, [isLoaded, signIn, clerk, params]);
+  }, [signIn, clerk, params]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">

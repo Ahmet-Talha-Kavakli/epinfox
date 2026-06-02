@@ -51,8 +51,10 @@ export function GameIconStrip({ brands }: { brands: Brand[] }) {
   // Kesintisiz döngü için listeyi iki kez render et.
   const loop = [...brands, ...brands];
 
+  // Hover'da DURMAZ — kesintisiz akar (duraklama 'takılma' hissi veriyordu).
+  // Tek tek ikonlar hover'da yine büyür (group-hover), şerit akmaya devam eder.
   return (
-    <div className="marquee-pause overflow-hidden border-y border-ink-200/60 bg-ink-50/40 py-4">
+    <div className="overflow-hidden border-y border-ink-200/60 bg-ink-50/40 py-4">
       <div className="animate-marquee flex w-max gap-5">
         {loop.map((b, i) => (
           <IconItem key={`${b.id}-${i}`} brand={b} />

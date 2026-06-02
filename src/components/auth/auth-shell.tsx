@@ -23,9 +23,7 @@ export function AuthShell({
   title,
   subtitle,
   children,
-  // Varsayılan: dikey hazine görseli (auth-hero henüz 9:16 üretilmedi; üretilince
-  // sign-in sayfasına heroImage="/auth/auth-hero.webp" geçilir).
-  heroImage = "/auth/auth-signup.webp",
+  heroImage = "/auth/auth-hero.webp",
 }: {
   title: string;
   subtitle: string;

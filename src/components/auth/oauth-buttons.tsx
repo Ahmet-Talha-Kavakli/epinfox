@@ -1,30 +1,29 @@
 "use client";
 
-import { GoogleLogo, SteamLogo } from "@phosphor-icons/react";
+import { GoogleLogo, SteamLogo, type BrandLogo } from "@/components/account/brand-logos";
 import { useI18n } from "@/lib/i18n/provider";
 
 export type OAuthStrategy = "oauth_google" | "oauth_custom_steam";
 
+// Gerçek marka logoları (brand-logos.tsx inline SVG'leri) — Phosphor'un jenerik
+// ikonları yerine resmi Google renkli + Steam beyaz logosu.
 const PROVIDERS: {
   strategy: OAuthStrategy;
   labelKey: string;
-  icon: typeof GoogleLogo;
+  icon: BrandLogo;
   cls: string;
-  iconCls: string;
 }[] = [
   {
     strategy: "oauth_google",
     labelKey: "auth.google",
     icon: GoogleLogo,
     cls: "border-ink-200 bg-white text-ink-800 hover:bg-ink-50",
-    iconCls: "text-[#4285F4]",
   },
   {
     strategy: "oauth_custom_steam",
     labelKey: "auth.steam",
     icon: SteamLogo,
     cls: "border-transparent bg-[#171a21] text-white hover:bg-[#2a3f5a]",
-    iconCls: "text-white",
   },
 ];
 
@@ -41,7 +40,7 @@ export function OAuthButtons({
   const { t } = useI18n();
   return (
     <div className="space-y-2.5">
-      {PROVIDERS.map(({ strategy, labelKey, icon: Icon, cls, iconCls }) => (
+      {PROVIDERS.map(({ strategy, labelKey, icon: Icon, cls }) => (
         <button
           key={strategy}
           type="button"
@@ -55,7 +54,7 @@ export function OAuthButtons({
           }}
           className={`flex h-11 w-full items-center justify-center gap-2.5 rounded-full border text-sm font-semibold transition-colors ${cls}`}
         >
-          <Icon size={19} weight="fill" className={iconCls} />
+          <Icon size={19} />
           {t(labelKey)}
         </button>
       ))}

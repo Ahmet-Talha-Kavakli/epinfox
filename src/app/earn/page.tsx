@@ -104,12 +104,12 @@ export default async function EarnPage() {
               <span className="absolute left-5 top-5 grid h-7 w-7 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-600">
                 {i + 1}
               </span>
-              <div className="relative mx-auto h-20 w-20">
+              <div className="relative mx-auto h-28 w-28">
                 <Image
                   src={s.img}
                   alt=""
                   fill
-                  sizes="80px"
+                  sizes="112px"
                   className="object-contain"
                 />
               </div>

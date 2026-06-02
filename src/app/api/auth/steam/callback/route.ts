@@ -58,11 +58,16 @@ export async function GET(req: NextRequest) {
     let userId = existing.data[0]?.id;
 
     if (!userId) {
+      // Steam email vermez → sentetik email (Clerk genelde bir identifier ister).
+      // firstName'i harf/rakam dışına izin vermeyebilir → temizle, boşsa fallback.
+      const safeFirst = steamName.replace(/[^\p{L}\p{N} ]/gu, "").trim() || "Steam";
       const created = await clerk.users.createUser({
         externalId,
+        emailAddress: [`steam_${steamId}@users.epinfox.com`],
         username: `steam_${steamId}`.slice(0, 64),
-        firstName: steamName,
+        firstName: safeFirst.slice(0, 64),
         skipPasswordRequirement: true,
+        skipPasswordChecks: true,
         unsafeMetadata: {
           steamId,
           steamName,
@@ -84,10 +89,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(finish);
   } catch (e) {
     console.error("Steam callback error:", e);
-    const msg = e instanceof Error ? e.message : "unknown";
+    // Clerk hataları detayı `errors` dizisinde tutar — onu çıkar
+    let msg = e instanceof Error ? e.message : "unknown";
+    const errObj = e as { errors?: { message?: string; longMessage?: string; code?: string }[] };
+    if (errObj?.errors?.length) {
+      msg = errObj.errors
+        .map((x) => x.longMessage || x.message || x.code)
+        .filter(Boolean)
+        .join(" | ");
+    }
     const url = new URL("/sign-in", SITE);
     url.searchParams.set("steam_error", "1");
-    url.searchParams.set("reason", msg.slice(0, 120));
+    url.searchParams.set("reason", msg.slice(0, 200));
     return NextResponse.redirect(url);
   }
 }

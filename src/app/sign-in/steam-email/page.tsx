@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { SpinnerGap } from "@phosphor-icons/react";
@@ -36,6 +36,14 @@ function SteamEmail() {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
+  // needsEmail durumu: yüklenmeyi bekle. Doğrulanmış (ya da Steam dışı) kullanıcı
+  // buraya düşmesin → /'a yönlendir. Render İÇİNDE değil useEffect'te yapılır
+  // (render-içi router.replace sonsuz re-render döngüsü yaratır).
+  const needsEmail = isLoaded && user?.publicMetadata?.needsEmail === true;
+  useEffect(() => {
+    if (isLoaded && !needsEmail) router.replace("/");
+  }, [isLoaded, needsEmail, router]);
+
   function mapError(err: ClerkErr): string {
     const map: Record<string, string> = {
       form_identifier_exists: t("auth.err.emailExists"),
@@ -46,19 +54,13 @@ function SteamEmail() {
     return (err?.code && map[err.code]) || err?.message || t("auth.err.generic");
   }
 
-  // Clerk yüklenene kadar bekle
-  if (!isLoaded) {
+  // Clerk yüklenene kadar VEYA yönlendirme kararı verilene kadar spinner göster
+  if (!isLoaded || !needsEmail) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center py-24">
         <SpinnerGap size={32} className="animate-spin text-brand-500" />
       </div>
     );
-  }
-
-  // Zaten doğrulanmış (ya da Steam dışı) kullanıcı buraya düşmesin
-  if (!user || user.publicMetadata?.needsEmail !== true) {
-    router.replace("/");
-    return null;
   }
 
   function sendCode() {

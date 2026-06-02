@@ -35,22 +35,29 @@ function SteamFinish() {
       setError(true);
       return;
     }
+    // Sonsuz spinner emniyeti: 15sn içinde yönlenmezse hata göster.
+    const timeout = setTimeout(() => setError(true), 15000);
     (async () => {
       try {
         const res = await signIn.create({ strategy: "ticket", ticket });
         if (res.status === "complete" && res.createdSessionId) {
           await setActive({ session: res.createdSessionId });
-          // Yeni Steam kullanıcısı zorunlu mail doğrulamaya gider; steam-email
-          // sayfası needsEmail=false ise kendini /'a yönlendirir (tek karar noktası).
-          router.push("/sign-in/steam-email");
+          // Hard navigation (router.push DEĞİL): yeni açılan session cookie'sinin
+          // sunucuya gitmesini ve proxy.ts'in needsEmail'i doğru görmesini garanti
+          // eder. router.push client-side RSC navigation cookie ile yarışabilir.
+          // Yeni Steam kullanıcısı steam-email'e gider; orası needsEmail=false ise
+          // kendini /'a yönlendirir (tek karar noktası).
+          window.location.href = "/sign-in/steam-email";
         } else {
           setError(true);
         }
       } catch (e) {
         console.error("Steam finish error:", e);
+        clearTimeout(timeout);
         setError(true);
       }
     })();
+    return () => clearTimeout(timeout);
   }, [isLoaded, params, signIn, setActive, router]);
 
   return (

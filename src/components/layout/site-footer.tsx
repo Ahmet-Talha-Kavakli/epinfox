@@ -32,7 +32,7 @@ const COLUMNS = [
     titleKey: "footer.col.brand",
     links: [
       { href: "/wallet", key: "footer.walletTopup" },
-      { href: "/brand", key: "footer.logos" },
+      { href: "/store", key: "footer.logos" },
       { href: "/reseller", key: "footer.aboutReseller" },
       { href: "/publisher/apply", key: "footer.publisherApply" },
       { href: "/earn", key: "footer.earn" },

@@ -68,6 +68,11 @@ export async function GET(req: NextRequest) {
         firstName: safeFirst.slice(0, 64),
         skipPasswordRequirement: true,
         skipPasswordChecks: true,
+        // Steam'in verdiği sentetik email gerçek değil → kullanıcının ulaşabileceği
+        // bir email girip doğrulaması gerekiyor. needsEmail JWT claim'ine yansır,
+        // proxy.ts bunu görüp /sign-in/steam-email'e kilitler (publicMetadata =
+        // sunucu-yazılabilir, client değiştiremez).
+        publicMetadata: { needsEmail: true },
         unsafeMetadata: {
           steamId,
           steamName,

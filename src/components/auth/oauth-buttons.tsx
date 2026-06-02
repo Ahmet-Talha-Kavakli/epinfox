@@ -1,9 +1,9 @@
 "use client";
 
-import { GoogleLogo, FacebookLogo, SteamLogo } from "@phosphor-icons/react";
+import { GoogleLogo, SteamLogo } from "@phosphor-icons/react";
 import { useI18n } from "@/lib/i18n/provider";
 
-export type OAuthStrategy = "oauth_google" | "oauth_facebook" | "oauth_custom_steam";
+export type OAuthStrategy = "oauth_google" | "oauth_custom_steam";
 
 const PROVIDERS: {
   strategy: OAuthStrategy;
@@ -20,13 +20,6 @@ const PROVIDERS: {
     iconCls: "text-[#4285F4]",
   },
   {
-    strategy: "oauth_facebook",
-    labelKey: "auth.facebook",
-    icon: FacebookLogo,
-    cls: "border-transparent bg-[#1877F2] text-white hover:bg-[#1568d8]",
-    iconCls: "text-white",
-  },
-  {
     strategy: "oauth_custom_steam",
     labelKey: "auth.steam",
     icon: SteamLogo,
@@ -36,7 +29,7 @@ const PROVIDERS: {
 ];
 
 /**
- * Sosyal giriş butonları (Google / Facebook / Steam) — marka renkli. onProvider,
+ * Sosyal giriş butonları (Google / Steam) — marka renkli. onProvider,
  * Clerk sso() çağrısını yapan handler'a strateji geçirir. Steam Clerk'te "custom"
  * OAuth bağlantısı olarak açılır (oauth_custom_steam).
  */

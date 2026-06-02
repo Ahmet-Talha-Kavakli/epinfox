@@ -40,7 +40,9 @@ function SteamFinish() {
         const res = await signIn.create({ strategy: "ticket", ticket });
         if (res.status === "complete" && res.createdSessionId) {
           await setActive({ session: res.createdSessionId });
-          router.push("/");
+          // Yeni Steam kullanıcısı zorunlu mail doğrulamaya gider; steam-email
+          // sayfası needsEmail=false ise kendini /'a yönlendirir (tek karar noktası).
+          router.push("/sign-in/steam-email");
         } else {
           setError(true);
         }

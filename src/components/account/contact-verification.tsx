@@ -101,14 +101,17 @@ function PhoneVerifyFlow() {
     user!.createPhoneNumber({ phoneNumber }),
   );
 
-  function mapError(err: ClerkErr): string {
+  function mapError(err: (ClerkErr & { longMessage?: string }) | undefined): string {
     const map: Record<string, string> = {
       form_identifier_exists: t("c3.contact.errPhoneExists"),
       form_param_format_invalid: t("c3.contact.errPhoneInvalid"),
+      form_param_unknown: t("c3.contact.errPhoneInvalid"),
       form_code_incorrect: t("c3.contact.errCode"),
       verification_failed: t("c3.contact.errCode"),
     };
-    return (err?.code && map[err.code]) || err?.message || t("c3.contact.errGeneric");
+    if (err?.code && map[err.code]) return map[err.code];
+    // GEÇİCİ teşhis: bilinmeyen Clerk hatasının tam metnini göster.
+    return err?.longMessage || err?.message || err?.code || t("c3.contact.errGeneric");
   }
 
   function sendCode() {

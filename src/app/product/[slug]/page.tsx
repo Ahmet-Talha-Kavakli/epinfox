@@ -26,7 +26,15 @@ import { ReviewSection } from "@/components/store/review-section";
 import { ProductSummarySidebar } from "@/components/store/product-summary-sidebar";
 import { getHowToSteps, getProductFaq } from "@/lib/content";
 import { getServerT, getServerLocale } from "@/lib/i18n/server";
+import { SITE } from "@/config/site";
 import { cn } from "@/lib/utils";
+
+/** Relative public path → mutlak URL (OG / JSON-LD için). */
+function absUrl(path: string | null): string | undefined {
+  if (!path) return undefined;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${SITE.url.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+}
 
 export async function generateMetadata({
   params,
@@ -39,7 +47,28 @@ export async function generateMetadata({
     const tt = await getServerT();
     return { title: tt("product.notFound") };
   }
-  return { title: product.name, description: product.description ?? undefined };
+  const image = absUrl(product.image_path);
+  const description =
+    product.description ??
+    `${product.name} — anında teslimat, güvenli ödeme. EpinFox'ta hemen satın al.`;
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: `/product/${slug}` },
+    openGraph: {
+      type: "website",
+      title: `${product.name} · ${SITE.name}`,
+      description,
+      url: `${SITE.url.replace(/\/$/, "")}/product/${slug}`,
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} · ${SITE.name}`,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+  };
 }
 
 export default async function ProductPage({
@@ -91,6 +120,44 @@ export default async function ProductPage({
   const savedValue =
     needsInfo && brandSlug ? await getPlayerAccountFor(brandSlug) : null;
 
+  // Google zengin sonuç (rich result) için Product yapılandırılmış verisi.
+  const price = product.minPrice ?? product.price;
+  const inStock = (product.stock ?? 0) > 0;
+  const ratingCount = reviewData.summary.count;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description:
+      product.description ??
+      `${product.name} — anında teslimat, güvenli ödeme.`,
+    ...(absUrl(product.image_path) ? { image: absUrl(product.image_path) } : {}),
+    ...(product.category?.name ? { category: product.category.name } : {}),
+    ...(brandSiblings?.name
+      ? { brand: { "@type": "Brand", name: brandSiblings.name } }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      price: price.toFixed(2),
+      priceCurrency: "TRY",
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      url: `${SITE.url.replace(/\/$/, "")}/product/${slug}`,
+    },
+    ...(ratingCount > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: reviewData.summary.average,
+            reviewCount: ratingCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   // Etiketler: kategori + ürün adındaki anlamlı kelimeler.
   const tags = Array.from(
     new Set(
@@ -103,6 +170,11 @@ export default async function ProductPage({
 
   return (
     <section className="container-page py-8">
+      {/* SEO: Product yapılandırılmış verisi (Google zengin sonuç) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">
         <Link href="/store" className="hover:text-brand-600">

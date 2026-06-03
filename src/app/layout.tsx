@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import { cookies } from "next/headers";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -220,6 +222,9 @@ export default async function RootLayout({
             <SatisfactionPopup />
             </CartProvider>
           </I18nProvider>
+          {/* Ölçümleme — cookie'siz, gizlilik dostu (Vercel). */}
+          <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>

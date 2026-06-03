@@ -28,9 +28,9 @@ export function AccountShell({
 
   return (
     <section className="container-page py-8">
-      {/* Masaüstünde tüm ızgarayı sola çek (lg:-ml-*) + sidebar↔içerik arası
-         mesafeyi aç (lg:gap-14). Sidebar container'ın sol kenarına yaklaşır. */}
-      <div className="grid grid-cols-1 gap-8 lg:-ml-10 lg:grid-cols-[230px_1fr] lg:gap-14 xl:-ml-16">
+      {/* Sidebar (sol) + içerik (sağ). Container içinde hizalı — negatif margin
+         kaldırıldı (sidebar sol kenara yapışıp kesiliyordu). */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[240px_1fr] lg:gap-12">
         {/* Sidebar */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
           {/* Kullanıcı kartı */}

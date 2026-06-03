@@ -6,6 +6,7 @@ import { requireMember, requireAdmin } from "@/lib/auth/require-admin";
 import { getServerT } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/notifications";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export type KycResult = { ok: true } | { ok: false; error: string };
 
@@ -79,6 +80,10 @@ export async function submitKyc(formData: FormData): Promise<KycResult> {
   }
 
   const current = await requireMember();
+
+  // Upload spam koruması: kullanıcı başına saatte en fazla 5 başvuru denemesi.
+  const allowed = await checkRateLimit(`kyc:submit:${current.user.id}`, 5, 3600);
+  if (!allowed) return { ok: false, error: t("srv.ky.tooMany") };
 
   // Zaten onaylıysa tekrar göndermeye gerek yok.
   if (current.profile.kyc_status === "approved") {

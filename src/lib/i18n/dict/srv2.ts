@@ -27,6 +27,7 @@ export const tr: Dict = {
   "srv.ky.uploadBack": "Kimliğin arka yüzünü yükle.",
   "srv.ky.alreadyApproved": "Kimliğin zaten onaylı.",
   "srv.ky.underReview": "Başvurun inceleniyor, lütfen bekle.",
+  "srv.ky.tooMany": "Çok fazla deneme yaptınız. Lütfen biraz bekleyip tekrar deneyin.",
   "srv.ky.uploadError": "Yükleme hatası.",
   "srv.ky.submitFailed": "Başvuru kaydedilemedi.",
   // reviews
@@ -68,6 +69,7 @@ export const en: Dict = {
   "srv.ky.uploadBack": "Upload the back of your ID.",
   "srv.ky.alreadyApproved": "Your ID is already approved.",
   "srv.ky.underReview": "Your application is under review, please wait.",
+  "srv.ky.tooMany": "Too many attempts. Please wait a moment and try again.",
   "srv.ky.uploadError": "Upload error.",
   "srv.ky.submitFailed": "Could not save your application.",
   // reviews
@@ -109,6 +111,7 @@ export const de: Dict = {
   "srv.ky.uploadBack": "Lade die Rückseite deines Ausweises hoch.",
   "srv.ky.alreadyApproved": "Dein Ausweis ist bereits bestätigt.",
   "srv.ky.underReview": "Dein Antrag wird geprüft, bitte warte.",
+  "srv.ky.tooMany": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
   "srv.ky.uploadError": "Upload-Fehler.",
   "srv.ky.submitFailed": "Dein Antrag konnte nicht gespeichert werden.",
   // reviews
@@ -150,6 +153,7 @@ export const ar: Dict = {
   "srv.ky.uploadBack": "ارفع الوجه الخلفي لهويتك.",
   "srv.ky.alreadyApproved": "هويتك معتمدة بالفعل.",
   "srv.ky.underReview": "طلبك قيد المراجعة، يرجى الانتظار.",
+  "srv.ky.tooMany": "محاولات كثيرة جدًا. يرجى الانتظار قليلاً والمحاولة مرة أخرى.",
   "srv.ky.uploadError": "خطأ في الرفع.",
   "srv.ky.submitFailed": "تعذّر حفظ طلبك.",
   // reviews
@@ -191,6 +195,7 @@ export const ru: Dict = {
   "srv.ky.uploadBack": "Загрузите обратную сторону удостоверения.",
   "srv.ky.alreadyApproved": "Ваше удостоверение уже подтверждено.",
   "srv.ky.underReview": "Ваша заявка на рассмотрении, пожалуйста, подождите.",
+  "srv.ky.tooMany": "Слишком много попыток. Подождите немного и попробуйте снова.",
   "srv.ky.uploadError": "Ошибка загрузки.",
   "srv.ky.submitFailed": "Не удалось сохранить заявку.",
   // reviews

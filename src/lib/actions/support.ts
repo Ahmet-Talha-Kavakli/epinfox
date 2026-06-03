@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireMember } from "@/lib/auth/require-admin";
 import { getServerT } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { SupportTicket, SupportMessage } from "@/lib/supabase/types";
 
 const createSchema = z.object({
@@ -80,6 +81,15 @@ export async function createTicket(
   if (!parsed.success) return { ok: false, error: t("srv.sp.fillAll") };
 
   const current = await requireMember();
+
+  // Spam koruması: kullanıcı başına saatte en fazla 10 yeni talep.
+  const allowed = await checkRateLimit(
+    `support:create:${current.user.id}`,
+    10,
+    3600,
+  );
+  if (!allowed) return { ok: false, error: t("srv.sp.tooMany") };
+
   const supabase = await createAdminClient();
 
   // İlgili siparişin gerçekten bu kullanıcıya ait olduğunu doğrula.

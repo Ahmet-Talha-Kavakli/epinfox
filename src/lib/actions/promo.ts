@@ -6,6 +6,7 @@ import { requireMember } from "@/lib/auth/require-admin";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getServerT } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export type PromoResult =
   | { ok: true; type: string; amount: number; message: string; newBalance: number | null }
@@ -29,6 +30,15 @@ export async function applyPromoCode(rawCode: string): Promise<PromoResult> {
   }
 
   const current = await requireMember();
+
+  // Kod brute-force koruması: kullanıcı başına dakikada en fazla 5 deneme.
+  const allowed = await checkRateLimit(
+    `promo:redeem:${current.user.id}`,
+    5,
+    60,
+  );
+  if (!allowed) return { ok: false, error: t("srv.pm.tooMany") };
+
   const supabase = await createAdminClient();
 
   const { data, error } = await supabase.rpc("promo_redeem", {

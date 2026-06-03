@@ -16,11 +16,13 @@ export const tr: Dict = {
   "srv.pm.codeMin": "Kod en az 3 karakter.",
   "srv.pm.invalid": "Geçersiz kod.",
   "srv.pm.failed": "İşlem başarısız, lütfen tekrar deneyin.",
+  "srv.pm.tooMany": "Çok fazla deneme yaptınız. Lütfen biraz bekleyip tekrar deneyin.",
   "srv.pm.applied": "Promo kod uygulandı!",
 
   // ── support ──
   "srv.sp.fillAll": "Lütfen tüm alanları doldur.",
   "srv.sp.createFailed": "Talep oluşturulamadı.",
+  "srv.sp.tooMany": "Çok fazla talep oluşturdunuz. Lütfen biraz bekleyip tekrar deneyin.",
   "srv.sp.msgInvalid": "Mesaj geçersiz.",
   "srv.sp.notFound": "Talep bulunamadı.",
   "srv.sp.closed": "Bu talep kapatılmış.",
@@ -136,11 +138,13 @@ export const en: Dict = {
   "srv.pm.codeMin": "Code must be at least 3 characters.",
   "srv.pm.invalid": "Invalid code.",
   "srv.pm.failed": "Operation failed, please try again.",
+  "srv.pm.tooMany": "Too many attempts. Please wait a moment and try again.",
   "srv.pm.applied": "Promo code applied!",
 
   // ── support ──
   "srv.sp.fillAll": "Please fill in all fields.",
   "srv.sp.createFailed": "Could not create the ticket.",
+  "srv.sp.tooMany": "Too many tickets created. Please wait a moment and try again.",
   "srv.sp.msgInvalid": "Invalid message.",
   "srv.sp.notFound": "Ticket not found.",
   "srv.sp.closed": "This ticket has been closed.",
@@ -254,11 +258,13 @@ export const de: Dict = {
   "srv.pm.codeMin": "Code muss mindestens 3 Zeichen lang sein.",
   "srv.pm.invalid": "Ungültiger Code.",
   "srv.pm.failed": "Vorgang fehlgeschlagen, bitte erneut versuchen.",
+  "srv.pm.tooMany": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
   "srv.pm.applied": "Promo-Code angewendet!",
 
   // ── support ──
   "srv.sp.fillAll": "Bitte fülle alle Felder aus.",
   "srv.sp.createFailed": "Ticket konnte nicht erstellt werden.",
+  "srv.sp.tooMany": "Zu viele Tickets erstellt. Bitte warte einen Moment und versuche es erneut.",
   "srv.sp.msgInvalid": "Ungültige Nachricht.",
   "srv.sp.notFound": "Ticket nicht gefunden.",
   "srv.sp.closed": "Dieses Ticket wurde geschlossen.",
@@ -377,11 +383,13 @@ export const ar: Dict = {
   "srv.pm.codeMin": "يجب أن يكون الرمز 3 أحرف على الأقل.",
   "srv.pm.invalid": "رمز غير صالح.",
   "srv.pm.failed": "فشلت العملية، يرجى المحاولة مرة أخرى.",
+  "srv.pm.tooMany": "محاولات كثيرة جدًا. يرجى الانتظار قليلاً والمحاولة مرة أخرى.",
   "srv.pm.applied": "تم تطبيق الرمز الترويجي!",
 
   // ── support ──
   "srv.sp.fillAll": "يرجى ملء جميع الحقول.",
   "srv.sp.createFailed": "تعذّر إنشاء الطلب.",
+  "srv.sp.tooMany": "لقد أنشأت طلبات كثيرة جدًا. يرجى الانتظار قليلاً والمحاولة مرة أخرى.",
   "srv.sp.msgInvalid": "رسالة غير صالحة.",
   "srv.sp.notFound": "لم يتم العثور على الطلب.",
   "srv.sp.closed": "تم إغلاق هذا الطلب.",
@@ -491,11 +499,13 @@ export const ru: Dict = {
   "srv.pm.codeMin": "Код должен содержать не менее 3 символов.",
   "srv.pm.invalid": "Неверный код.",
   "srv.pm.failed": "Операция не удалась, попробуйте ещё раз.",
+  "srv.pm.tooMany": "Слишком много попыток. Подождите немного и попробуйте снова.",
   "srv.pm.applied": "Промокод применён!",
 
   // ── support ──
   "srv.sp.fillAll": "Пожалуйста, заполните все поля.",
   "srv.sp.createFailed": "Не удалось создать обращение.",
+  "srv.sp.tooMany": "Слишком много обращений. Подождите немного и попробуйте снова.",
   "srv.sp.msgInvalid": "Недопустимое сообщение.",
   "srv.sp.notFound": "Обращение не найдено.",
   "srv.sp.closed": "Это обращение закрыто.",

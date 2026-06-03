@@ -6,6 +6,7 @@ import { requireMember } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/server";
 import { notify, notifyAdmins } from "@/lib/notifications";
 import { createInvoiceForOrder } from "@/lib/account";
+import { sendEmail, emailTemplate } from "@/lib/email";
 import { getServerT } from "@/lib/i18n/server";
 import {
   getProvider,
@@ -81,6 +82,32 @@ async function afterOrder(
     description: label,
     amount: args.price,
   });
+
+  // Sipariş onay e-postası (Resend). Kullanıcının e-postasını çek; mail hata
+  // verse bile sipariş akışını KIRMAZ (sendEmail throw etmez).
+  try {
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("email, nickname")
+      .eq("id", args.userId)
+      .maybeSingle();
+    const email = (prof?.email as string) || "";
+    if (email && !email.endsWith("@users.epinfox.com")) {
+      const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://epinfox.com";
+      await sendEmail({
+        to: email,
+        subject: `Siparişin hazır — ${label}`,
+        text: `Merhaba ${prof?.nickname ?? ""},\n\n"${label}" siparişin tamamlandı. Detaylar ve teslimat bilgisi için Siparişlerim sayfasına göz at:\n${SITE_URL}/orders?new=${args.orderId}\n\nİyi oyunlar!\nEpinFox`,
+        html: emailTemplate({
+          heading: "Siparişin hazır! 🎉",
+          bodyHtml: `Merhaba <b>${prof?.nickname ?? "oyuncu"}</b>,<br><br><b>${label}</b> siparişin tamamlandı. Teslimat detaylarını Siparişlerim sayfasından görebilirsin.`,
+          cta: { label: "Siparişlerimi Gör", href: `${SITE_URL}/orders?new=${args.orderId}` },
+        }),
+      });
+    }
+  } catch (e) {
+    console.error("order email failed:", e);
+  }
 }
 
 /**

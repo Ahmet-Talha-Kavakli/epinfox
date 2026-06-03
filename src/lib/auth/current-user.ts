@@ -2,6 +2,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/server";
+import { sendEmail, emailTemplate } from "@/lib/email";
 import { ADMIN_ROLES, type Profile } from "@/lib/supabase/types";
 
 /**
@@ -133,7 +134,25 @@ async function ensureProfile(
         .select("*")
         .maybeSingle();
 
-      if (!error && inserted) return inserted as Profile;
+      if (!error && inserted) {
+        // Hoş geldin e-postası (yeni profil). Sentetik (Steam, henüz mail
+        // doğrulamamış) adreslere gönderme. Hata akışı kırmaz.
+        if (email && !email.endsWith("@users.epinfox.com")) {
+          const SITE_URL =
+            process.env.NEXT_PUBLIC_SITE_URL || "https://epinfox.com";
+          sendEmail({
+            to: email,
+            subject: "EpinFox'a hoş geldin! 🦊",
+            text: `Merhaba ${nickname},\n\nEpinFox'a hoş geldin! Oyun bakiyesi, dijital kod ve aboneliklerde anında teslimat seni bekliyor. Cüzdanına yükle, saniyeler içinde satın al.\n\nMağazayı keşfet: ${SITE_URL}/store\n\nİyi oyunlar!\nEpinFox`,
+            html: emailTemplate({
+              heading: "EpinFox'a hoş geldin! 🦊",
+              bodyHtml: `Merhaba <b>${nickname}</b>,<br><br>Oyun bakiyesi, dijital kod ve aboneliklerde <b>anında teslimat</b> seni bekliyor. Cüzdanına yükle, saniyeler içinde satın al.`,
+              cta: { label: "Mağazayı Keşfet", href: `${SITE_URL}/store` },
+            }),
+          }).catch(() => {});
+        }
+        return inserted as Profile;
+      }
 
       // Unique violation?
       if (error?.code === "23505") {

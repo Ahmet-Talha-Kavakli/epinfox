@@ -8,6 +8,7 @@ import {
   UsersThree,
   Storefront,
   User,
+  EnvelopeSimple,
 } from "@phosphor-icons/react";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export function BroadcastForm() {
   const [body, setBody] = useState("");
   const [link, setLink] = useState("");
   const [audience, setAudience] = useState<Audience>("all");
+  const [alsoEmail, setAlsoEmail] = useState(false);
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -38,9 +40,17 @@ export function BroadcastForm() {
         body: body || undefined,
         link: link || undefined,
         audience,
+        sendEmail: alsoEmail,
       });
       if (r.ok) {
-        setMsg({ ok: true, text: `Bildirim ${r.count} kullanıcıya gönderildi.` });
+        const emailNote =
+          alsoEmail && r.emailCount != null
+            ? ` · ${r.emailCount} e-posta gönderildi (izin verenlere)`
+            : "";
+        setMsg({
+          ok: true,
+          text: `Bildirim ${r.count} kullanıcıya gönderildi${emailNote}.`,
+        });
         setTitle("");
         setBody("");
         setLink("");
@@ -97,9 +107,34 @@ export function BroadcastForm() {
             <Input id="b-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder="/store veya /raffles" disabled={pending} />
           </div>
 
+          {/* E-posta seçeneği */}
+          <label
+            className={cn(
+              "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors",
+              alsoEmail ? "border-brand-400 bg-brand-50/60" : "border-ink-200 hover:bg-ink-50",
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={alsoEmail}
+              onChange={(e) => setAlsoEmail(e.target.checked)}
+              disabled={pending}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+            />
+            <span className="min-w-0">
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                <EnvelopeSimple size={16} weight="duotone" className="text-brand-600" />
+                E-posta olarak da gönder
+              </span>
+              <span className="mt-0.5 block text-xs text-ink-500">
+                Yalnızca <b>pazarlama e-postası izni olan</b> kullanıcılara gider (KVKK). Markalı EpinFox şablonuyla gönderilir.
+              </span>
+            </span>
+          </label>
+
           <Button onClick={send} disabled={pending || title.trim().length < 2}>
             {pending ? <CircleNotch size={16} className="animate-spin" /> : <PaperPlaneTilt size={16} weight="fill" />}
-            Bildirimi Gönder
+            {alsoEmail ? "Bildirim + E-posta Gönder" : "Bildirimi Gönder"}
           </Button>
 
           {msg && (

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/server";
 import { notify } from "@/lib/notifications";
+import { sendEmail, emailTemplate } from "@/lib/email";
 import type { UserRole } from "@/lib/supabase/types";
 
 export type Result = { ok: true } | { ok: false; error: string };
@@ -194,10 +195,12 @@ const broadcastSchema = z.object({
   link: z.string().trim().max(200).optional(),
   // hedef kitle
   audience: z.enum(["all", "resellers", "members"]),
+  // E-posta olarak da gönder (yalnızca pazarlama izni olanlara — KVKK).
+  sendEmail: z.boolean().optional(),
 });
 
 export type BroadcastResult =
-  | { ok: true; count: number }
+  | { ok: true; count: number; emailCount?: number }
   | { ok: false; error: string };
 
 export async function broadcastNotification(
@@ -210,14 +213,18 @@ export async function broadcastNotification(
   await requireAdmin();
   const supabase = await createAdminClient();
 
-  let q = supabase.from("profiles").select("id");
+  let q = supabase.from("profiles").select("id, email, marketing_opt_in");
   if (parsed.data.audience === "resellers") {
     q = q.eq("reseller_status", "approved");
   } else if (parsed.data.audience === "members") {
     q = q.eq("role", "member");
   }
   const { data: users } = await q;
-  const rows = ((users as { id: string }[]) ?? []).map((u) => ({
+  const audience =
+    (users as { id: string; email: string | null; marketing_opt_in: boolean }[]) ??
+    [];
+
+  const rows = audience.map((u) => ({
     user_id: u.id,
     type: "promo" as const,
     title: parsed.data.title,
@@ -233,7 +240,43 @@ export async function broadcastNotification(
     const { error } = await supabase.from("notifications").insert(rows.slice(i, i + chunk));
     if (error) return { ok: false, error: "Gönderim başarısız." };
   }
-  return { ok: true, count: rows.length };
+
+  // E-posta olarak da gönder — yalnızca pazarlama izni olan ve gerçek
+  // (sentetik olmayan) adreslere. KVKK: opt-out'a saygı şart.
+  let emailCount = 0;
+  if (parsed.data.sendEmail) {
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://epinfox.com";
+    const recipients = audience.filter(
+      (u) =>
+        u.marketing_opt_in &&
+        u.email &&
+        !u.email.endsWith("@users.epinfox.com"),
+    );
+    const link = parsed.data.link
+      ? parsed.data.link.startsWith("http")
+        ? parsed.data.link
+        : `${SITE_URL}${parsed.data.link}`
+      : `${SITE_URL}/store`;
+    const html = emailTemplate({
+      heading: parsed.data.title,
+      bodyHtml: (parsed.data.body || "").replace(/\n/g, "<br>"),
+      cta: { label: "EpinFox'a Git", href: link },
+    });
+    const text = `${parsed.data.title}\n\n${parsed.data.body || ""}\n\n${link}`;
+
+    // Resend'i boğmamak için küçük gruplar halinde, hatalar yutularak.
+    for (const u of recipients) {
+      const r = await sendEmail({
+        to: u.email!,
+        subject: parsed.data.title,
+        text,
+        html,
+      }).catch(() => ({ ok: false }));
+      if (r.ok) emailCount++;
+    }
+  }
+
+  return { ok: true, count: rows.length, emailCount };
 }
 
 /* ───────────────────────────── Promo kodları ───────────────────────────── */

@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireMember } from "@/lib/auth/require-admin";
+import { requireMember, requireAdmin } from "@/lib/auth/require-admin";
 import { getServerT } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { notify } from "@/lib/notifications";
 
 export type KycResult = { ok: true } | { ok: false; error: string };
 
@@ -117,4 +118,110 @@ export async function submitKyc(formData: FormData): Promise<KycResult> {
 
   revalidatePath("/account/settings");
   return { ok: true };
+}
+
+/* ─── Admin: KYC inceleme ──────────────────────────────────────────────── */
+
+const decideKycSchema = z.object({
+  userId: z.string().uuid(),
+  approve: z.boolean(),
+  rejectReason: z.string().trim().max(300).optional(),
+});
+
+/**
+ * Admin KYC başvurusunu onaylar/reddeder.
+ * - Sadece `pending` durumdaki başvuru karara bağlanabilir (idempotent koruma).
+ * - Karar sonrası kullanıcıya bildirim gider.
+ * Desen: decideResellerApplication (reseller.ts) ile aynı.
+ */
+export async function decideKyc(
+  input: z.infer<typeof decideKycSchema>,
+): Promise<KycResult> {
+  const parsed = decideKycSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Geçersiz istek." };
+  await requireAdmin();
+  const supabase = await createAdminClient();
+  const { userId, approve, rejectReason } = parsed.data;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, kyc_status")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!profile) return { ok: false, error: "Kullanıcı bulunamadı." };
+  if (profile.kyc_status !== "pending") {
+    return { ok: false, error: "Bu başvuru zaten sonuçlandırılmış." };
+  }
+
+  const now = new Date().toISOString();
+
+  if (approve) {
+    await supabase
+      .from("profiles")
+      .update({
+        kyc_status: "approved",
+        kyc_reviewed_at: now,
+        kyc_reject_reason: null,
+      })
+      .eq("id", userId);
+    await notify(supabase, {
+      userId,
+      type: "system",
+      title: "Kimlik doğrulaman onaylandı! ✅",
+      body: "KYC başvurun onaylandı. Hesabın artık tam doğrulanmış durumda.",
+      link: "/account/settings",
+    });
+  } else {
+    await supabase
+      .from("profiles")
+      .update({
+        kyc_status: "rejected",
+        kyc_reviewed_at: now,
+        kyc_reject_reason: rejectReason || null,
+      })
+      .eq("id", userId);
+    await notify(supabase, {
+      userId,
+      type: "system",
+      title: "Kimlik doğrulaman sonuçlandı",
+      body: rejectReason
+        ? `Başvurun onaylanmadı: ${rejectReason}`
+        : "Başvurun bu sefer onaylanmadı. Bilgilerini kontrol edip tekrar başvurabilirsin.",
+      link: "/account/settings",
+    });
+  }
+
+  revalidatePath("/admin/kyc");
+  revalidatePath("/account/settings");
+  return { ok: true };
+}
+
+export type KycDocUrls = { front: string | null; back: string | null };
+
+/**
+ * Admin için KYC belge görsellerinin geçici (signed) URL'lerini üretir.
+ * Bucket private olduğundan doğrudan public URL yok. 5 dakika geçerli.
+ */
+export async function getKycDocUrls(userId: string): Promise<KycDocUrls> {
+  await requireAdmin();
+  const supabase = await createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("kyc_doc_front_path, kyc_doc_back_path")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!profile) return { front: null, back: null };
+
+  const sign = async (path: string | null) => {
+    if (!path) return null;
+    const { data } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(path, 300);
+    return data?.signedUrl ?? null;
+  };
+
+  return {
+    front: await sign(profile.kyc_doc_front_path),
+    back: await sign(profile.kyc_doc_back_path),
+  };
 }

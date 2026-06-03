@@ -16,7 +16,7 @@ export default async function AdminLayout({
   const supabase = await createAdminClient();
 
   // Sidebar rozetleri — aksiyon bekleyen sayılar
-  const [deliveries, resellers, tickets, earn] = await Promise.all([
+  const [deliveries, resellers, tickets, earn, kyc] = await Promise.all([
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -33,6 +33,10 @@ export default async function AdminLayout({
       .from("earn_submissions")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("kyc_status", "pending"),
   ]);
 
   const badges = {
@@ -40,6 +44,7 @@ export default async function AdminLayout({
     resellers: resellers.count ?? 0,
     tickets: tickets.count ?? 0,
     earn: earn.count ?? 0,
+    kyc: kyc.count ?? 0,
   };
 
   return (

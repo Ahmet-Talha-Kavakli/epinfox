@@ -18,6 +18,7 @@ import {
   Tag,
   House,
   CurrencyCircleDollar,
+  IdentificationCard,
   type Icon,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,7 @@ interface NavItem {
   label: string;
   icon: Icon;
   exact?: boolean;
-  badgeKey?: "deliveries" | "resellers" | "tickets" | "earn";
+  badgeKey?: "deliveries" | "resellers" | "tickets" | "earn" | "kyc";
 }
 
 interface NavGroup {
@@ -60,6 +61,7 @@ const GROUPS: NavGroup[] = [
     title: "Kullanıcılar",
     items: [
       { href: "/admin/users", label: "Kullanıcılar", icon: UsersThree },
+      { href: "/admin/kyc", label: "Kimlik Doğrulama", icon: IdentificationCard, badgeKey: "kyc" },
       { href: "/admin/resellers", label: "Bayi Başvuruları", icon: Storefront, badgeKey: "resellers" },
       { href: "/admin/publishers", label: "Yayıncı Başvuruları", icon: Megaphone },
       { href: "/admin/earn", label: "Para Kazan", icon: CurrencyCircleDollar, badgeKey: "earn" },
@@ -79,7 +81,7 @@ const GROUPS: NavGroup[] = [
 export function AdminSidebar({
   badges,
 }: {
-  badges?: { deliveries?: number; resellers?: number; tickets?: number; earn?: number };
+  badges?: { deliveries?: number; resellers?: number; tickets?: number; earn?: number; kyc?: number };
 }) {
   const pathname = usePathname();
   const isActive = (item: NavItem) =>

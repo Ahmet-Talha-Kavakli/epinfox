@@ -26,7 +26,7 @@ import { ReviewSection } from "@/components/store/review-section";
 import { ProductSummarySidebar } from "@/components/store/product-summary-sidebar";
 import { getHowToSteps, getProductFaq } from "@/lib/content";
 import { getServerT, getServerLocale } from "@/lib/i18n/server";
-import { SITE } from "@/config/site";
+import { SITE, STORE_LOCKED } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 /** Relative public path → mutlak URL (OG / JSON-LD için). */
@@ -243,7 +243,9 @@ export default async function ProductPage({
                     name: product.name,
                     imagePath: product.image_path,
                     deliveryType,
-                    autoSupply: product.supply_source !== "manual",
+                    autoSupply: STORE_LOCKED
+                      ? false
+                      : product.supply_source !== "manual",
                   }}
                   savedValue={savedValue}
                   platformSlug={brandSlug}
@@ -259,7 +261,9 @@ export default async function ProductPage({
                     name: product.name,
                     imagePath: product.image_path,
                     description: product.description,
-                    autoSupply: product.supply_source !== "manual",
+                    autoSupply: STORE_LOCKED
+                      ? false
+                      : product.supply_source !== "manual",
                   }}
                 />
               )}

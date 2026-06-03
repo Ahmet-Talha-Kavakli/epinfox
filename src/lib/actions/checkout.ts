@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { notify, notifyAdmins } from "@/lib/notifications";
 import { createInvoiceForOrder } from "@/lib/account";
 import { sendEmail, emailTemplate } from "@/lib/email";
+import { STORE_LOCKED } from "@/config/site";
 import { getServerT } from "@/lib/i18n/server";
 import {
   getProvider,
@@ -119,6 +120,8 @@ export async function purchaseProduct(
   input: z.infer<typeof schema>,
 ): Promise<PurchaseResult> {
   const t = await getServerT();
+  // Mağaza kilidi (gerçek ödeme yok) — server-side koruma; UI'a güvenme.
+  if (STORE_LOCKED) return { ok: false, error: t("srv.co.err.storeLocked") };
   const parsed = schema.safeParse(input);
   if (!parsed.success)
     return { ok: false, error: t("srv.co.err.invalidRequest") };
@@ -473,6 +476,8 @@ export async function purchaseCart(
   input: z.infer<typeof cartSchema>,
 ): Promise<CartPurchaseResult> {
   const t = await getServerT();
+  // Mağaza kilidi (gerçek ödeme yok) — server-side koruma; UI'a güvenme.
+  if (STORE_LOCKED) return { ok: false, error: t("srv.co.err.storeLocked") };
   const parsed = cartSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: t("srv.co.err.invalidCart") };
 

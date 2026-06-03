@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { STORE_LOCKED } from "@/config/site";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 import { getContentLocale, overlayTranslations } from "@/lib/content-i18n";
 import { DICTIONARIES } from "@/lib/i18n/dictionaries";
@@ -289,11 +290,12 @@ async function enrich(products: Product[]): Promise<ProductWithMeta[]> {
     }
   }
 
-  // Grupla
+  // Grupla. Mağaza kilitliyse (gerçek ödeme yok) tüm varyant stoğu 0 — vitrin
+  // görünür kalır ama "Tükendi" gösterilip satın alma engellenir.
   const variantsByProduct = new Map<string, VariantWithStock[]>();
   for (const v of variants) {
     const arr = variantsByProduct.get(v.product_id) ?? [];
-    arr.push({ ...v, stock: availByVariant.get(v.id) ?? 0 });
+    arr.push({ ...v, stock: STORE_LOCKED ? 0 : (availByVariant.get(v.id) ?? 0) });
     variantsByProduct.set(v.product_id, arr);
   }
 
@@ -308,9 +310,12 @@ async function enrich(products: Product[]): Promise<ProductWithMeta[]> {
     const prices = vs.map((v) => v.price);
     const minPrice = prices.length ? Math.min(...prices) : p.price;
     // Stoksuz kaynaklar sonsuz stoklu sayılır (Tükendi rozeti çıkmaz).
-    const stock = isStockless(p)
-      ? Number.POSITIVE_INFINITY
-      : vs.reduce((sum, v) => sum + v.stock, 0);
+    // Mağaza kilitliyse hepsi 0 — stoksuz (service/smm) ürünler de "Tükendi".
+    const stock = STORE_LOCKED
+      ? 0
+      : isStockless(p)
+        ? Number.POSITIVE_INFINITY
+        : vs.reduce((sum, v) => sum + v.stock, 0);
     const compares = vs
       .map((v) => v.compare_at)
       .filter((c): c is number => c != null);

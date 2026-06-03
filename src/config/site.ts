@@ -1,3 +1,14 @@
+/**
+ * Mağaza satış kilidi. Gerçek ödeme (PayTR/Stripe) bağlanana kadar TÜM ürünler
+ * "Stok Yok / Tükendi" gösterilir ve satın alma (sepete ekle / hemen al) kilitlenir.
+ * Vitrin görünür kalır; yalnızca satış engellenir.
+ *
+ * Kapatmak için: NEXT_PUBLIC_STORE_LOCKED=false (env) — veya buradaki varsayılanı
+ * değiştir. Env "false" değilse kilit AÇIKTIR (güvenli varsayılan).
+ * DB'ye dokunmaz; tek noktadan geri alınır.
+ */
+export const STORE_LOCKED = process.env.NEXT_PUBLIC_STORE_LOCKED !== "false";
+
 export const SITE = {
   name: "EpinFox",
   shortName: "EpinFox",

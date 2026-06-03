@@ -10,6 +10,7 @@ import { getServerT } from "@/lib/i18n/server";
 import { getContentLocale, localizeOrderItems } from "@/lib/content-i18n";
 import { formatTL } from "@/lib/format";
 import { paymentMethodLabel } from "@/lib/payment-methods";
+import { STORE_LOCKED } from "@/config/site";
 import type { WalletTransaction } from "@/lib/supabase/types";
 
 const topUpSchema = z.object({
@@ -29,6 +30,8 @@ export async function topUpBalance(
   input: z.infer<typeof topUpSchema>,
 ): Promise<TopUpResult> {
   const t = await getServerT();
+  // Mağaza kilidi (gerçek ödeme yok) — sahte bakiye yüklemeyi engelle.
+  if (STORE_LOCKED) return { ok: false, error: t("srv.co.err.storeLocked") };
   const parsed = topUpSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: t("srv.wa.err.amountRange") };
